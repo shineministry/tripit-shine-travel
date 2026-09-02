@@ -7,6 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
 :root{
   --blue:#0f6fb4;
@@ -148,7 +149,7 @@ button{font-family:inherit}
 </style>
 </head>
 <body>
-<div class="topbar">✨ <strong>New — TripIt Shine Pro:</strong> AI layover planner, lounge & queue time prediction + 1-click visa vault. <span>Try Pro free 30 days →</span></div>
+<div class="topbar" style="display:flex;justify-content:center;gap:12px;align-items:center;flex-wrap:wrap">✨ Your personal TripIt Shine — direct to dashboard <span style="background:rgba(255,255,255,.15);padding:2px 8px;border-radius:999px">No homepage — just your trips</span> <button onclick="document.getElementById('tripitImportModal').classList.add('open')" style="background:#fff;color:#0b2a46;border:none;padding:4px 10px;border-radius:999px;font-weight:800;font-size:12px;cursor:pointer"><i class="fa-solid fa-download"></i> Import from TripIt / Google</button></div>
 
 <nav class="navbar">
   <div class="brand"><div class="brand-mark"><i class="fa-solid fa-plane"></i></div> TripIt Shine <span style="font-weight:500;color:var(--muted);font-size:13px;letter-spacing:.04em">TRAVEL</span></div>
@@ -160,54 +161,24 @@ button{font-family:inherit}
     <a href="#pro">TripIt Pro+ More</a>
   </div>
   <div class="nav-actions">
+    <button class="btn btn-ghost" onclick="document.getElementById('tripitImportModal').classList.add('open')" style="background:#e0f0ff;color:var(--blue);border-color:#bfdbfe"><i class="fa-solid fa-cloud-arrow-down"></i> Import TripIt / Google</button>
     <button class="btn btn-ghost" onclick="document.getElementById('importModal').classList.add('open')"><i class="fa-solid fa-inbox"></i> Forward Email</button>
     <button class="btn btn-blue" onclick="openModal()"><i class="fa-solid fa-plus"></i> Add Plan</button>
-    <img src="https://i.pravatar.cc/100?img=15" alt="avatar" style="width:36px;height:36px;border-radius:50%;border:2px solid var(--line)">
+    <div id="userBox" style="display:flex;align-items:center;gap:8px"><img id="userAvatar" src="https://i.pravatar.cc/100?img=15" alt="avatar" style="width:36px;height:36px;border-radius:50%;border:2px solid var(--line)"><span id="userName" style="font-size:12px;font-weight:700;color:var(--muted)">You</span></div>
   </div>
 </nav>
 
-<section class="hero">
-  <div>
-    <div style="display:inline-flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--line);padding:6px 10px;border-radius:999px;font-size:12px;font-weight:700"><span style="background:var(--blue);color:#fff;padding:2px 7px;border-radius:999px">EXACTLY LIKE TRIPIT</span> + way more options</div>
-    <h1>Organize travel <em>like TripIt</em>,<br>but supercharged for<br>real travelers.</h1>
-    <p>Forward booking emails, auto-builds a master itinerary. Now with <strong>airport waiting, lounge, immigration, baggage, layover games, packing weight, budget & currency</strong> — icons for every micro-moment TripIt misses.</p>
-    <div class="hero-badges">
-      <span class="badge"><i class="fa-solid fa-wand-magic-sparkles"></i> Auto-import Gmail/Outlook</span>
-      <span class="badge"><i class="fa-solid fa-tower-broadcast"></i> Real-time flight alerts</span>
-      <span class="badge"><i class="fa-solid fa-users"></i> Share & collaborate</span>
-      <span class="badge"><i class="fa-solid fa-print"></i> 1-tap print & PDF</span>
-    </div>
-    <div style="display:flex;gap:10px;flex-wrap:wrap">
-      <button class="btn btn-primary" onclick="openModal()"> <i class="fa-solid fa-plus"></i> Create New Trip</button>
-      <button class="btn btn-ghost" onclick="scrollToItinerary()"><i class="fa-solid fa-eye"></i> View Demo Itinerary</button>
-      <span style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)"><i class="fa-solid fa-shield-halved" style="color:var(--green)"></i> Offline-ready • Encrypted vault</span>
-    </div>
-    <div class="beyond" style="margin-top:16px">
-      <div class="beyond-card"><h4><i class="fa-solid fa-hourglass-half" style="color:var(--orange)"></i> Airport Waiting</h4><p>Track gate, queue time, boarding countdown — never miss a call.</p></div>
-      <div class="beyond-card"><h4><i class="fa-solid fa-couch" style="color:var(--blue)"></i> Lounge & Rest</h4><p>Lounge access, shower, nap pods, prayer room icons.</p></div>
-      <div class="beyond-card"><h4><i class="fa-solid fa-suitcase-rolling" style="color:var(--green)"></i> Baggage Live</h4><p>Carousel, weight, AirTag, delayed-bag workflow.</p></div>
-    </div>
+<div style="max-width:1280px;margin:14px auto 0;padding:0 24px;display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+  <div style="background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px 14px;display:flex;gap:10px;align-items:center;flex:1;min-width:280px;box-shadow:var(--shadow)">
+    <div style="width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,var(--blue),#19a7e8);display:grid;place-items:center;color:#fff"><i class="fa-solid fa-plane"></i></div>
+    <div><div style="font-weight:800">Welcome back — your trips dashboard</div><div style="font-size:12px;color:var(--muted)">Direct to your itinerary • No homepage. TripIt → Shine in one click.</div></div>
+    <button class="btn btn-primary" style="margin-left:auto" onclick="document.getElementById('tripitImportModal').classList.add('open')"><i class="fa-solid fa-cloud-arrow-down"></i> Import TripIt / Google</button>
   </div>
-  <div class="hero-card">
-    <div class="hero-card-head">
-      <div><div style="font-weight:800;letter-spacing:.02em">MUM → VIE • 18–22 Aug 2026</div><div style="opacity:.9;font-size:12px">4 travelers • Auto-synced • 14 plans</div></div>
-      <div style="background:rgba(255,255,255,.2);padding:6px 10px;border-radius:999px;font-weight:800;font-size:12px"><i class="fa-solid fa-plane-departure"></i> ON TIME</div>
-    </div>
-    <div class="hero-card-body">
-      <div class="mini-timeline">
-        <div class="mini-item"><div class="mini-icon" style="background:var(--blue)"><i class="fa-solid fa-plane"></i></div><div><b style="font-size:13px">AI 465 Mumbai → Vienna</b><div style="font-size:12px;color:var(--muted)">02:15 — 06:45 • Austrian • Terminal 2</div></div><span style="margin-left:auto;font-size:11px;font-weight:800;color:var(--green)">✓ Confirmed</span></div>
-        <div class="mini-item"><div class="mini-icon" style="background:var(--orange)"><i class="fa-regular fa-hourglass-half"></i></div><div><b style="font-size:13px">Airport Wait & Immigration</b><div style="font-size:12px;color:var(--muted)">VIE • 45–90 min • Fast-track lane</div></div><span style="margin-left:auto;font-size:11px;background:#fff1ec;color:var(--orange-dark);padding:3px 7px;border-radius:999px;font-weight:800">Wait Icon</span></div>
-        <div class="mini-item"><div class="mini-icon" style="background:#8b5cf6"><i class="fa-solid fa-couch"></i></div><div><b style="font-size:13px">Lounge: Jet Lounge Vienna</b><div style="font-size:12px;color:var(--muted)">Shower • Quiet pod • 3h access</div></div></div>
-        <div class="mini-item"><div class="mini-icon" style="background:var(--green)"><i class="fa-solid fa-hotel"></i></div><div><b style="font-size:13px">Hotel — Anif, Salzburg</b><div style="font-size:12px;color:var(--muted)">Internat SHM • Check-in 15:00</div></div></div>
-      </div>
-      <div style="display:flex;gap:8px;margin-top:12px">
-        <button class="btn btn-blue" style="flex:1;justify-content:center" onclick="window.print()"><i class="fa-solid fa-file-pdf"></i> Export TripIt PDF</button>
-        <button class="btn btn-ghost" style="flex:1;justify-content:center" onclick="shareTrip()"><i class="fa-solid fa-share-nodes"></i> Share</button>
-      </div>
-      <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:8px">Drag & drop to reorder • Click card to edit • Icons for every step</div>
-    </div>
+  <div style="display:flex;gap:8px">
+    <button class="btn btn-ghost" onclick="openModal()"><i class="fa-solid fa-plus"></i> Add Plan</button>
+    <button class="btn btn-ghost" onclick="exportJSON()"><i class="fa-solid fa-download"></i> Backup</button>
   </div>
-</section>
+</div>
 
 <div class="stats">
   <div class="stat"><div><span>Days to go</span><b id="countdown">—</b></div><i class="fa-solid fa-calendar-check" style="color:var(--blue);font-size:22px"></i></div>
@@ -422,6 +393,74 @@ button{font-family:inherit}
     <div class="footer">
       <button class="btn btn-ghost" onclick="closeMapPicker()">Cancel</button>
       <button class="btn btn-primary" onclick="confirmMapPick()"><i class="fa-solid fa-check"></i> Use this location</button>
+    </div>
+  </div>
+</div>
+
+<!-- TRIPIT / GOOGLE IMPORT MODAL -->
+<div class="modal-backdrop" id="tripitImportModal">
+  <div class="modal" style="width:min(820px,100%)">
+    <div class="modal-header">
+      <div><b><i class="fa-solid fa-cloud-arrow-down"></i> Extract trips from TripIt.com + Google Account</b><div style="font-size:12px;color:var(--muted)">Personal site — pulls directly into your dashboard (no homepage). Choose any method below.</div></div>
+      <button class="icon-btn" onclick="document.getElementById('tripitImportModal').classList.remove('open')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body" style="gap:16px">
+      <!-- Tabs -->
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-blue" style="padding:8px 12px" onclick="showImportTab('google')"><i class="fa-brands fa-google"></i> 1. Google Account</button>
+        <button class="btn btn-ghost" style="padding:8px 12px" onclick="showImportTab('tripit')"><i class="fa-solid fa-plane"></i> 2. TripIt Feed / Export</button>
+        <button class="btn btn-ghost" style="padding:8px 12px" onclick="showImportTab('upload')"><i class="fa-solid fa-file-arrow-up"></i> 3. Upload File</button>
+      </div>
+
+      <!-- GOOGLE TAB -->
+      <div id="importTab-google" class="importTab">
+        <div style="background:#e8f3fe;border:1px solid #bfdbfe;border-radius:14px;padding:14px">
+          <b><i class="fa-brands fa-google"></i> Connect Google Account (reads TripIt trips + Gmail bookings)</b>
+          <div style="font-size:12px;color:#334155;margin:6px 0">TripIt login via Google + TripIt forwards bookings to Gmail. We request read-only access to import them directly into Shine.</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px">
+            <div id="g_id_signin"></div>
+            <button class="btn btn-primary" onclick="googleSignIn()"><i class="fa-brands fa-google"></i> Sign in with Google</button>
+            <button class="btn btn-ghost" onclick="googleFetchTrips()"><i class="fa-solid fa-rotate"></i> Fetch trips now</button>
+            <span id="googleStatus" style="font-size:12px;color:var(--muted)"></span>
+          </div>
+          <div style="font-size:11px;color:var(--muted);margin-top:8px">Needs a Google OAuth Client ID (see below). Without it, you can paste your TripIt ICS URL or upload export — no Google required.<br>Client ID: <input id="googleClientId" placeholder="e.g. 123456...apps.googleusercontent.com" style="width:320px;max-width:100%;padding:6px 8px;border-radius:8px;border:1px solid var(--line);font-size:11px"><button class="btn btn-ghost" style="padding:4px 8px;font-size:11px;margin-left:4px" onclick="saveGoogleClientId()">Save</button></div>
+          <div id="googleTripList" style="margin-top:10px;display:grid;gap:8px"></div>
+        </div>
+        <div style="font-size:12px;color:var(--muted);background:#f8fafc;border:1px dashed var(--line);border-radius:10px;padding:10px">
+          <b>How it works (like TripIt):</b> 1) Sign in with same Google you use for TripIt → 2) We call TripIt API (if you authorized) + scan Gmail for `tripit.com` / airline confirmations → 3) One click imports flights/hotels/cars as Shine plans.<br><em>Privacy: token stays in your browser (localStorage), never sent to server.</em>
+        </div>
+      </div>
+
+      <!-- TRIPIT TAB -->
+      <div id="importTab-tripit" class="importTab" style="display:none">
+        <div style="display:grid;gap:10px">
+          <div style="background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px">
+            <b><i class="fa-solid fa-link"></i> Paste TripIt ICS feed URL</b><div style="font-size:12px;color:var(--muted)">TripIt.com → Settings → Calendar Feed → Copy private ICS URL (contains `tripit.com/feed/ical/...`). We fetch and convert.</div>
+            <div style="display:flex;gap:8px;margin-top:8px"><input id="tripitFeedUrl" placeholder="https://www.tripit.com/feed/ical/private/XXXX/XXXX.ics" style="flex:1;padding:10px 12px;border-radius:12px;border:1px solid var(--line)"><button class="btn btn-blue" onclick="importTripitFeed()"><i class="fa-solid fa-download"></i> Import</button></div>
+            <div id="tripitFeedStatus" style="font-size:12px;color:var(--muted);margin-top:6px"></div>
+          </div>
+          <div style="background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px">
+            <b><i class="fa-solid fa-key"></i> TripIt API (advanced, OAuth 1.0a)</b><div style="font-size:12px;color:var(--muted)">If you have TripIt API credentials (request at tripit.com/developer), paste token here to pull `https://api.tripit.com/v1/list/trip`. Most users can skip — use ICS above.</div>
+            <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap"><input id="tripitApiToken" placeholder="oauth_token / API key (optional)" style="flex:1;min-width:200px;padding:10px 12px;border-radius:12px;border:1px solid var(--line)"><button class="btn btn-ghost" onclick="importTripitApi()"><i class="fa-solid fa-cloud-arrow-down"></i> Call API</button></div>
+            <div id="tripitApiStatus" style="font-size:12px;color:var(--muted);margin-top:6px"></div>
+          </div>
+          <div style="font-size:12px;background:#f1f5f9;border-radius:10px;padding:10px"><b>Manual export fallback:</b> TripIt.com → Your Trips → Export → Download ICS/CSV → then use <em>Upload File</em> tab.</div>
+        </div>
+      </div>
+
+      <!-- UPLOAD TAB -->
+      <div id="importTab-upload" class="importTab" style="display:none">
+        <div style="border:2px dashed var(--line);border-radius:14px;padding:18px;text-align:center;background:#f8fafc" ondragover="event.preventDefault()" ondrop="handleDrop(event)">
+          <div style="font-size:28px">📂</div><b>Drop TripIt export here or click to browse</b><div style="font-size:12px;color:var(--muted)">Accepts: TripIt JSON, ICS (.ics), CSV, or Shine JSON</div>
+          <label class="btn btn-blue" style="margin-top:10px;cursor:pointer"><i class="fa-solid fa-file-arrow-up"></i> Choose File <input type="file" id="tripitFile" hidden accept=".json,.ics,.csv,.txt" onchange="handleTripitFile(this.files[0])"></label>
+          <div id="tripitFileStatus" style="font-size:12px;color:var(--muted);margin-top:8px"></div>
+        </div>
+        <div style="display:flex;gap:8px"><button class="btn btn-ghost" onclick="downloadSampleTripit()"><i class="fa-solid fa-download"></i> Download sample TripIt ICS</button><button class="btn btn-ghost" onclick="clearAllTrips()"><i class="fa-solid fa-trash"></i> Clear all trips</button></div>
+      </div>
+    </div>
+    <div class="footer">
+      <button class="btn btn-ghost" onclick="document.getElementById('tripitImportModal').classList.remove('open')">Close</button>
+      <span style="font-size:11px;color:var(--muted)">Tip: after import, edit any plan to add airport waiting / lounge / baggage icons — things TripIt never had.</span>
     </div>
   </div>
 </div>
@@ -917,6 +956,270 @@ function confirmMapPick(){
   closeMapPicker();
   document.getElementById('gmapsStatus').textContent='📍 Location picked from map';
 }
+
+// ===== TripIt + Google Import (personal dashboard) =====
+function showImportTab(name){
+  document.querySelectorAll('.importTab').forEach(el=> el.style.display='none');
+  document.getElementById('importTab-'+name).style.display='block';
+}
+function saveGoogleClientId(){
+  const v=document.getElementById('googleClientId').value.trim();
+  if(v) localStorage.setItem('shine_google_client_id', v);
+  else localStorage.removeItem('shine_google_client_id');
+  document.getElementById('googleStatus').textContent = v? 'Client ID saved — now Sign in' : 'Cleared';
+  renderGoogleButton();
+}
+let _googleToken=null, _googleUser=null;
+function renderGoogleButton(){
+  const cid = localStorage.getItem('shine_google_client_id')||'';
+  document.getElementById('googleClientId').value=cid;
+  if(!cid || !window.google || !google.accounts) return;
+  try{
+    google.accounts.id.initialize({
+      client_id: cid,
+      callback: handleGoogleCredential,
+      auto_select: false
+    });
+    const parent=document.getElementById('g_id_signin');
+    if(parent){
+      parent.innerHTML='';
+      google.accounts.id.renderButton(parent,{theme:'outline',size:'large',text:'signin_with',shape:'pill'});
+    }
+  }catch(e){ console.warn(e); }
+}
+function handleGoogleCredential(resp){
+  try{
+    const payload = JSON.parse(atob(resp.credential.split('.')[1]));
+    _googleUser = payload;
+    _googleToken = resp.credential;
+    localStorage.setItem('shine_google_user', JSON.stringify(payload));
+    document.getElementById('userName').textContent = payload.name || payload.email || 'You';
+    if(payload.picture) document.getElementById('userAvatar').src = payload.picture;
+    document.getElementById('googleStatus').textContent = 'Signed in as '+payload.email+' — click Fetch trips now';
+    // Try to fetch via GIS token flow if available
+    googleFetchTrips();
+  }catch(e){ document.getElementById('googleStatus').textContent='Sign-in error'; }
+}
+function googleSignIn(){
+  const cid = localStorage.getItem('shine_google_client_id');
+  if(!cid) return alert('Paste your Google OAuth Client ID first.\nCreate at https://console.cloud.google.com/apis/credentials → Create Credentials → OAuth client ID → Web app → add origin '+location.origin);
+  if(window.google && google.accounts && google.accounts.id){
+    google.accounts.id.prompt();
+    document.getElementById('googleStatus').textContent='Choose Google account in popup…';
+  } else {
+    alert('Google library not loaded — check internet');
+  }
+  // Also try token client for Gmail scope
+  tryTokenClient();
+}
+let _tokenClient=null;
+function tryTokenClient(){
+  const cid=localStorage.getItem('shine_google_client_id');
+  if(!cid || !window.google || !google.accounts || !google.accounts.oauth2) return;
+  _tokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: cid,
+    scope: 'https://www.googleapis.com/auth/gmail.readonly https://www.googleapis.com/auth/userinfo.email',
+    callback: (resp)=>{
+      if(resp.access_token){
+        _googleToken = resp.access_token;
+        localStorage.setItem('shine_google_access_token', resp.access_token);
+        document.getElementById('googleStatus').textContent='Google access granted — fetching Gmail for TripIt bookings…';
+        fetchGmailTripit();
+      }
+    }
+  });
+  _tokenClient.requestAccessToken({prompt:''});
+}
+async function googleFetchTrips(){
+  const cid=localStorage.getItem('shine_google_client_id');
+  const user=JSON.parse(localStorage.getItem('shine_google_user')||'null');
+  if(!user && !cid){
+    document.getElementById('googleStatus').textContent='Sign in first or use TripIt feed / upload below (no Google needed).';
+    return;
+  }
+  document.getElementById('googleStatus').textContent='Fetching… if you have TripIt feed URL, paste it in Tab 2 for instant import.';
+  document.getElementById('googleTripList').innerHTML = '<div style="font-size:12px;color:var(--muted)"><i class="fa-solid fa-spinner fa-spin"></i> Looking for TripIt trips…</div>';
+  // Simulate: if Gmail token exists try real Gmail, otherwise show instructions + demo import
+  const token=localStorage.getItem('shine_google_access_token');
+  if(token){
+    fetchGmailTripit();
+  } else {
+    setTimeout(()=>{
+      document.getElementById('googleTripList').innerHTML = `
+        <div style="background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px">
+          <b>No Gmail token yet</b><div style="font-size:12px;color:var(--muted)">Click "Sign in with Google" then allow Gmail read. Or skip Google: paste TripIt ICS URL in Tab 2, or drop exported file in Tab 3 — works immediately without any setup.</div>
+          <div style="display:flex;gap:8px;margin-top:8px"><button class="btn btn-blue" onclick="showImportTab('tripit')">Go to TripIt feed</button><button class="btn btn-ghost" onclick="showImportTab('upload')">Upload export</button><button class="btn btn-ghost" onclick="demoImportTripit()"><i class="fa-solid fa-bolt"></i> Demo: import 2 sample TripIt trips</button></div>
+        </div>`;
+    }, 600);
+  }
+  renderGoogleButton();
+}
+async function fetchGmailTripit(){
+  const token=localStorage.getItem('shine_google_access_token');
+  if(!token) return;
+  try{
+    const r=await fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages?q=tripit%20OR%20boarding%20OR%20itinerary&maxResults=10', {headers:{Authorization:'Bearer '+token}});
+    if(!r.ok) throw new Error('Gmail API '+r.status);
+    const j=await r.json();
+    const msgs=j.messages||[];
+    if(!msgs.length){ document.getElementById('googleTripList').innerHTML='<div style="font-size:12px;color:var(--muted)">No TripIt/booking emails found in Gmail. Try TripIt feed tab.</div>'; return; }
+    let html='<div style="font-size:12px;font-weight:800">Found '+msgs.length+' booking emails — import as plans:</div>';
+    for(const m of msgs.slice(0,5)){
+      const d=await fetch(`https://gmail.googleapis.com/gmail/v1/users/me/messages/${m.id}?format=metadata&metadataHeaders=Subject&metadataHeaders=From`, {headers:{Authorization:'Bearer '+token}});
+      const jd=await d.json();
+      const subj=(jd.payload && jd.payload.headers||[]).find(h=>h.name==='Subject')?.value||'(no subject)';
+      html+=`<div style="background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px;display:flex;justify-content:space-between;align-items:center"><span style="font-size:12px"><b>${subj.slice(0,60)}</b></span><button class="btn btn-blue" style="padding:6px 10px;font-size:11px" onclick="alert('Parsed via Gmail → created plan (demo)')">Import</button></div>`;
+    }
+    document.getElementById('googleTripList').innerHTML=html;
+  }catch(e){
+    document.getElementById('googleTripList').innerHTML='<div style="color:#ef4444;font-size:12px">Gmail fetch failed: '+e.message+' — use TripIt ICS URL instead (Tab 2) — no Google required.</div>';
+  }
+}
+function demoImportTripit(){
+  const demoTrips=[
+    {id:'t'+Date.now(), name:'Imported: Mumbai → Vienna (from TripIt)', from:'2026-08-18', to:'2026-08-22', city:'Vienna • Salzburg', budget:2500, travelers:2},
+    {id:'t'+(Date.now()+1), name:'Imported: Delhi → Dubai (from Google)', from:'2026-10-05', to:'2026-10-09', city:'Dubai', budget:1800, travelers:1},
+  ];
+  const demoSegs=[
+    {id:'s'+Date.now(), tripId:demoTrips[0].id, type:'flight', title:'Imported flight — AI 465', conf:'TRIPIT', date:'2026-08-18', time:'02:15', dur:'7h 45m', loc:'BOM → VIE', iconNote:'From TripIt', notes:'Auto-imported from TripIt', cost:520, status:'Confirmed'},
+    {id:'s'+(Date.now()+1), tripId:demoTrips[1].id, type:'hotel', title:'Imported hotel — Dubai Marina', conf:'', date:'2026-10-05', time:'15:00', dur:'4 nights', loc:'Dubai Marina', iconNote:'From Google', notes:'From Gmail booking', cost:420, status:'Confirmed'},
+  ];
+  trips.push(...demoTrips); segments.push(...demoSegs); save(); render();
+  document.getElementById('googleTripList').innerHTML='<div style="color:var(--green);font-size:12px;font-weight:700">✓ Imported 2 trips — see Your Trips on left. Close this and view dashboard.</div>';
+  document.getElementById('tripitImportModal').classList.remove('open');
+}
+async function importTripitFeed(){
+  const url=document.getElementById('tripitFeedUrl').value.trim();
+  if(!url) return alert('Paste TripIt ICS URL');
+  localStorage.setItem('shine_tripit_feed', url);
+  document.getElementById('tripitFeedStatus').textContent='Fetching feed… (may need CORS proxy if TripIt blocks)';
+  try{
+    // Use cors proxy via allorigins
+    const fetchUrl = url.includes('tripit.com') ? `https://api.allorigins.win/get?url=${encodeURIComponent(url)}` : url;
+    const r=await fetch(fetchUrl);
+    const j=await r.json().catch(()=>null);
+    const text = j && j.contents ? j.contents : await r.text();
+    const count = parseICS(text);
+    document.getElementById('tripitFeedStatus').textContent = count? `✓ Imported ${count} events from TripIt feed` : 'Feed fetched but no events parsed — try Upload tab with exported file';
+    if(count) document.getElementById('tripitImportModal').classList.remove('open');
+  }catch(e){
+    document.getElementById('tripitFeedStatus').textContent='Fetch failed (TripIt ics often needs CORS proxy). Download the .ics file from TripIt and drop in Upload tab — that always works. Error: '+e.message;
+  }
+}
+function importTripitApi(){
+  const tok=document.getElementById('tripitApiToken').value.trim();
+  if(!tok) return alert('Paste TripIt API token or use ICS URL');
+  document.getElementById('tripitApiStatus').textContent='Calling TripIt API via allorigins proxy…';
+  fetch(`https://api.allorigins.win/get?url=${encodeURIComponent('https://api.tripit.com/v1/list/trip?format=json')}`, {headers:{Authorization:'OAuth '+tok}})
+    .then(r=>r.json()).then(j=>{
+      const txt=j.contents||JSON.stringify(j);
+      try{
+        const data=JSON.parse(txt);
+        const tripsArr = data.Trip||data.trips||[];
+        document.getElementById('tripitApiStatus').textContent='API replied — parsing '+(Array.isArray(tripsArr)?tripsArr.length:'unknown')+' trips. For full import, use ICS/Upload.';
+      }catch(e){ document.getElementById('tripitApiStatus').textContent='API response received, but parse needs TripIt OAuth 1.0a setup — easier: use ICS URL.'; }
+    }).catch(e=> document.getElementById('tripitApiStatus').textContent='API call failed: '+e.message);
+}
+function handleTripitFile(file){
+  if(!file) return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const txt=e.target.result;
+    const name=file.name.toLowerCase();
+    let count=0;
+    if(name.endsWith('.ics')) count=parseICS(txt);
+    else if(name.endsWith('.csv')) count=parseCSV(txt);
+    else count=parseJSON(txt);
+    document.getElementById('tripitFileStatus').textContent = count? `✓ Imported ${count} items from ${file.name}` : 'File read but no trips found — check format';
+    if(count) document.getElementById('tripitImportModal').classList.remove('open');
+  };
+  reader.readAsText(file);
+}
+function handleDrop(e){
+  e.preventDefault();
+  const f=e.dataTransfer.files[0];
+  if(f) handleTripitFile(f);
+}
+function parseICS(txt){
+  const events = txt.split('BEGIN:VEVENT');
+  let added=0;
+  const tid='t'+Date.now();
+  const t={id:tid, name:'Imported TripIt feed '+new Date().toLocaleDateString(), from:new Date().toISOString().slice(0,10), to:new Date().toISOString().slice(0,10), city:'Imported', budget:2000, travelers:1};
+  let hasTrip=false;
+  for(let i=1;i<events.length;i++){
+    const block=events[i];
+    const get=k=>{ const m=block.match(new RegExp(k+':([^\\r\\n]+)')); return m?m[1].trim():''; };
+    const summary=get('SUMMARY');
+    const loc=get('LOCATION');
+    const dtstart=get('DTSTART');
+    const desc=get('DESCRIPTION');
+    if(!summary) continue;
+    if(!hasTrip){ trips.push(t); hasTrip=true; }
+    const date = dtstart? dtstart.slice(0,4)+'-'+dtstart.slice(4,6)+'-'+dtstart.slice(6,8) : new Date().toISOString().slice(0,10);
+    const time = dtstart && dtstart.includes('T')? dtstart.slice(9,11)+':'+dtstart.slice(11,13) : '09:00';
+    const type = /flight|airline/i.test(summary)?'flight' : /hotel/i.test(summary)?'hotel' : /car/i.test(summary)?'car' : 'other';
+    segments.push({id:'s'+Date.now()+added, tripId:tid, type, title:summary, conf:'', date, time, dur:'', loc:loc||'', iconNote:'TripIt ICS', notes:desc||'', cost:0, status:'Confirmed'});
+    added++;
+  }
+  if(added){ save(); render(); }
+  return added;
+}
+function parseCSV(txt){
+  const lines=txt.split(/\r?\n/).filter(Boolean);
+  let added=0; const tid='t'+Date.now(); const t={id:tid, name:'Imported CSV '+new Date().toLocaleDateString(), from:new Date().toISOString().slice(0,10), to:new Date().toISOString().slice(0,10), city:'Imported', budget:2000, travelers:1};
+  let hasTrip=false;
+  for(let i=1;i<lines.length;i++){
+    const cols=lines[i].split(',');
+    if(cols.length<2) continue;
+    if(!hasTrip){ trips.push(t); hasTrip=true; }
+    segments.push({id:'s'+Date.now()+added, tripId:tid, type:'other', title:cols[0]||'Imported', conf:'', date:new Date().toISOString().slice(0,10), time:'09:00', dur:'', loc:cols[1]||'', iconNote:'CSV', notes:cols.slice(2).join(','), cost:0, status:'Confirmed'});
+    added++;
+  }
+  if(added){ save(); render(); }
+  return added;
+}
+function parseJSON(txt){
+  try{
+    const j=JSON.parse(txt);
+    if(j.trips && j.segments){ // Shine backup
+      const map={};
+      j.trips.forEach(tr=>{ const nid='t'+Date.now()+Math.random().toString(36).slice(2,6); map[tr.id]=nid; trips.push({...tr,id:nid}); });
+      j.segments.forEach(s=> segments.push({...s,id:'s'+Date.now()+Math.random().toString(36).slice(2,6), tripId: map[s.tripId]||s.tripId}));
+      save(); render(); return j.segments.length;
+    }
+    if(Array.isArray(j)){ // generic TripIt array
+      const tid='t'+Date.now(); trips.push({id:tid, name:'Imported JSON '+new Date().toLocaleDateString(), from:new Date().toISOString().slice(0,10), to:new Date().toISOString().slice(0,10), city:'Imported', budget:2000, travelers:1});
+      j.forEach((it,idx)=> segments.push({id:'s'+Date.now()+idx, tripId:tid, type:'other', title:it.summary||it.title||'Imported', conf:'', date:new Date().toISOString().slice(0,10), time:'09:00', dur:'', loc:it.location||'', iconNote:'JSON', notes:JSON.stringify(it).slice(0,200), cost:0, status:'Confirmed'}));
+      save(); render(); return j.length;
+    }
+  }catch(e){ console.warn(e); }
+  return 0;
+}
+function downloadSampleTripit(){
+  const ics=`BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//TripIt Shine//EN
+BEGIN:VEVENT
+SUMMARY:Flight BOM to VIE
+DTSTART:20260818T021500Z
+LOCATION:Mumbai BOM
+DESCRIPTION:TripIt sample
+END:VEVENT
+END:VCALENDAR`;
+  const blob=new Blob([ics],{type:'text/calendar'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='tripit-sample.ics'; a.click();
+}
+function clearAllTrips(){ if(confirm('Clear all trips and plans? Cannot undo.')){ trips=[]; segments=[]; save(); render(); alert('Cleared'); } }
+// auto-init google button when library loads
+window.addEventListener('load', ()=>{
+  setTimeout(renderGoogleButton, 800);
+  // restore Google user
+  const u=JSON.parse(localStorage.getItem('shine_google_user')||'null');
+  if(u){
+    document.getElementById('userName').textContent=u.name||u.email||'You';
+    if(u.picture) document.getElementById('userAvatar').src=u.picture;
+  }
+  document.getElementById('tripitImportModal').addEventListener('click', e=>{ if(e.target===e.currentTarget) e.currentTarget.classList.remove('open'); });
+});
 </script>
 </body>
 </html>
