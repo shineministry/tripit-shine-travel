@@ -675,9 +675,9 @@ function render(){
           <div>
             <div class="seg-title" style="color:#0f6fb4">${s.title} ${s.type==='wait'?`<span style="font-size:10px;background:#fff1ec;color:#ff6b35;padding:2px 6px;border-radius:999px;border:1px solid #ffddd0">Airport Wait</span>`:''}</div>
             <div class="seg-sub" style="color:#475569">${s.type==='flight' || s.type==='transportation' ? s.loc : ''}${s.loc && s.type!=='flight' && s.type!=='transportation' ? s.loc : ''}${s.conf?` &nbsp; <span style="color:#94a3b8">#${s.conf}</span>`:''}</div>
-            ${s.iconNote?`<div style="font-size:11px;color:#64748b;margin-top:2px"><i class="fa-solid ${t.icon}" style="color:#0f6fb4"></i> ${s.iconNote}</div>`:''}
-            ${s.notes?`<div style="font-size:12px;color:#334155;margin-top:4px">${s.notes}</div>`:''}
-            ${s.type==='flight' || s.type==='rail' ? `<div style="font-size:11px;color:#64748b;margin-top:4px">Duration: ${s.dur||'—'} • Seat: ${s.iconNote||'—'}</div>` : ``}
+            ${s.iconNote && s.type!=='wait' ?`<div style="font-size:11px;color:#64748b;margin-top:2px"><i class="fa-solid ${t.icon}" style="color:#0f6fb4"></i> ${s.iconNote}</div>`:''}
+            ${s.detailsHtml ? `<div style="margin-top:6px;background:#fcfdff;border:1px solid #eef2f7;border-radius:10px;padding:8px 10px">${s.detailsHtml}</div>` : (s.notes?`<div style="font-size:12px;color:#334155;margin-top:6px;white-space:pre-line">${s.notes}</div>`:'')}
+            ${!s.detailsHtml && (s.type==='flight' || s.type==='rail') ? `<div style="font-size:11px;color:#64748b;margin-top:4px">Duration: ${s.dur||'—'} • Seat: ${s.iconNote||'—'}</div>` : ``}
           </div>
           <div class="seg-actions" style="align-self:center">
             <button class="icon-btn" title="Edit" onclick="editPlan('${s.id}')" style="width:28px;height:28px"><i class="fa-solid fa-pen" style="font-size:11px"></i></button>
@@ -1376,12 +1376,84 @@ function parseTripitPublicHTML(html, srcUrl){
       if(ap==='am' && h===12) h=0;
       time= String(h).padStart(2,'0')+':'+String(min||'0').padStart(2,'0');
     }
-    // checkpoints for flight/transportation
+    // ---- TripIt structure: checkpoints + collapsible Q&A, line by line with bold ----
+    let detailsHtml = '';
+    function addLine(q,a){
+      const qq = (q||'').trim();
+      const aa = (a||'').trim();
+      if(!qq && !aa) return;
+      // escape html
+      const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      if(qq && aa){
+        // bold question, answer beside, with break line (flex)
+        detailsHtml += `<div style="display:flex;gap:8px;padding:3px 0;border-bottom:1px dashed #f1f5f9;font-size:12px;line-height:1.5"><span style="font-weight:700;color:#0f172a;min-width:170px;flex-shrink:0">${esc(qq)}</span><span style="color:#334155;flex:1">${esc(aa)}</span></div>`;
+      } else if(qq){
+        detailsHtml += `<div style="font-weight:700;color:#0f172a;font-size:12px;padding:3px 0">${esc(qq)}</div>`;
+      } else {
+        detailsHtml += `<div style="color:#334155;font-size:12px;padding:3px 0">${esc(aa)}</div>`;
+      }
+    }
+    // checkpoints for flight/transportation — like TripIt Depart/Arrive lines
     const checkpoints = el.querySelectorAll('.checkpoint');
+    let locParts=[];
     if(checkpoints.length){
-      loc = Array.from(checkpoints).map(cp=> cp.textContent.replace(/\s+/g,' ').trim()).join(' → ').slice(0,120);
+      checkpoints.forEach(cp=>{
+        const ctype = cp.querySelector('.checkpoint-type')?.textContent?.trim() || '';
+        const aname = cp.querySelector('.airport-name')?.textContent?.trim() || '';
+        const addr = cp.querySelector('a')?.textContent?.trim() || Array.from(cp.querySelectorAll('div')).map(d=> d.textContent.trim()).join(' ').trim();
+        const line = [aname, addr].filter(Boolean).join(' — ').slice(0,140);
+        if(ctype) addLine(ctype+':', line);
+        else if(line) locParts.push(line);
+        locParts.push(line);
+      });
+      loc = locParts.join(' → ').slice(0,160);
     } else {
-      loc = otherInfo || el.querySelector('.trip-item-content')?.textContent?.trim().slice(0,120) || '';
+      loc = otherInfo || '';
+    }
+    // header flight/seat/duration etc — also as Q&A
+    const airInfo = el.querySelector('.air-other-info')?.textContent?.trim();
+    if(airInfo) addLine('Flight:', airInfo);
+    const seats = el.querySelector('.seats')?.textContent?.trim();
+    if(seats) addLine('Seat(s):', seats);
+    const duration = el.querySelector('.duration')?.textContent?.trim();
+    if(duration) addLine('Duration:', duration);
+    const layover = el.querySelector('.layover-section')?.textContent?.trim();
+    if(layover && !/None/.test(layover)) addLine('Layover:', layover.replace('Layover:','').trim());
+    // collapsible sections — exactly TripIt: each left-side bold, right-side answer, with break
+    el.querySelectorAll('.collapsible').forEach(coll=>{
+      const heading = coll.querySelector('.collapsible-heading')?.textContent?.trim().replace(/\s+/g,' ');
+      // skip empty Traveler Info header if needed, but keep structure
+      if(heading && !/Traveler Info/.test(heading)) {
+        // section heading as bold separator
+        detailsHtml += `<div style="font-weight:800;color:#0f6fb4;font-size:11px;text-transform:uppercase;letter-spacing:.04em;padding:8px 0 2px;border-top:1px solid #f1f5f9;margin-top:6px">${heading.replace(/▶|▼/g,'').trim()}</div>`;
+      }
+      coll.querySelectorAll(':scope > .collapsible-body > div, :scope .collapsible-body > div').forEach(row=>{
+        const left = row.querySelector('.left-side')?.textContent?.trim();
+        const right = row.querySelector('.right-side')?.textContent?.trim();
+        // also handle note-body pre text
+        if(left || right){
+          // skip empty rows where both empty and no-content-label
+          if(left && right) addLine(left, right);
+          else if(left && !right && !row.querySelector('.no-content-label')) addLine(left, right);
+          else if(left && right==='') {
+            // still show question with empty answer as — 
+            // only show if meaningful (not empty placeholder)
+            if(!row.querySelector('.no-content-label') || right) addLine(left, right||'—');
+          }
+        }
+      });
+      // handle note-body without left/right (e.g., Airport Waiting Source)
+      const noteBody = coll.querySelector('.note-body');
+      if(noteBody && !coll.querySelector('.left-side')){
+        const txt = noteBody.textContent.trim().replace(/\s+/g,' ').slice(0,300);
+        if(txt) addLine('Note:', txt);
+      }
+    });
+    // fallback if no details extracted, use otherInfo as single line
+    if(!detailsHtml){
+      if(otherInfo) addLine('Details:', otherInfo);
+      const fallback = el.querySelector('.trip-item-content')?.textContent?.trim().replace(/\s+/g,' ').slice(0,300);
+      if(fallback) addLine('Info:', fallback);
     }
     // map typeCode
     let type='other';
@@ -1393,7 +1465,6 @@ function parseTripitPublicHTML(html, srcUrl){
     } else if(typeCode==='L') type='hotel';
     else if(typeCode==='C') type='car';
     else {
-      // fallback by title
       if(/concert/i.test(mainInfo)) type='concert';
       else if(/restaurant/i.test(mainInfo)) type='restaurant';
       else if(/parking/i.test(mainInfo)) type='parking';
@@ -1403,8 +1474,9 @@ function parseTripitPublicHTML(html, srcUrl){
       const parts=dateText.split('/'); // 9/8/2026
       if(parts.length===3) date=`${parts[2]}-${parts[0].padStart(2,'0')}-${parts[1].padStart(2,'0')}`;
     }
-    notes = (el.querySelector('.trip-item-content')?.textContent?.trim().replace(/\s+/g,' ').slice(0,200) || '') + ' ' + srcUrl;
-    segments.push({id:'s'+Date.now()+added+Math.random().toString(36).slice(2,5), tripId, type, title: mainInfo || 'Imported', conf, date, time, dur, loc: loc.replace('Confirmation #:','').trim(), iconNote: tzEl? tzEl.textContent.trim(): '', notes: notes.trim(), cost:0, status:'Confirmed'});
+    // keep short loc for timeline subtitle, full details in detailsHtml
+    notes = detailsHtml || ((el.querySelector('.trip-item-content')?.textContent?.trim().replace(/\s+/g,' ').slice(0,200) || '') + ' ' + srcUrl);
+    segments.push({id:'s'+Date.now()+added+Math.random().toString(36).slice(2,5), tripId, type, title: mainInfo || 'Imported', conf, date, time, dur, loc: loc.replace('Confirmation #:','').trim().slice(0,160), iconNote: tzEl? tzEl.textContent.trim(): '', notes: notes.trim(), detailsHtml: detailsHtml, cost:0, status:'Confirmed'});
     added++;
   });
   activeTripId=tripId; save(); render();
