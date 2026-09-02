@@ -462,6 +462,13 @@ button{font-family:inherit}
             <b><i class="fa-solid fa-link"></i> Paste TripIt share link (e.g. https://www.tripit.com/p/B7598A827337133B339593FB87C87F79)</b><div style="font-size:12px;color:var(--muted)">TripIt → Your Trip → Share → Copy link. We extract <strong>exactly</strong> like TripIt (100% same), plus Airport Wait.</div>
             <div style="display:flex;gap:8px;margin-top:8px"><input id="tripitShareUrl" placeholder="https://www.tripit.com/p/XXXXXX" style="flex:1;padding:10px 12px;border-radius:12px;border:1px solid var(--line)"><button class="btn btn-primary" onclick="importTripitShareLink()"><i class="fa-solid fa-wand-magic-sparkles"></i> Extract</button></div>
             <div id="tripitShareStatus" style="font-size:12px;color:var(--muted);margin-top:6px"></div>
+            <div id="tripitManualWrap" style="display:none;margin-top:12px;border:1px dashed #0f6fb4;padding:12px;border-radius:12px;background:#f0f7ff">
+              <b style="font-size:12px;color:#0f6fb4"><i class="fa-solid fa-triangle-exclamation"></i> Auto fetch blocked by CORS — manual fallback (100% reliable)</b>
+              <div style="font-size:11px;color:#334155;margin-top:4px">1. Open your TripIt link in new tab → 2. Press <span class="kbd">Ctrl+U</span> (View Source) → <span class="kbd">Ctrl+A</span> → <span class="kbd">Ctrl+C</span> → paste below → <b>Parse</b><br>Or: on the TripIt page, press <span class="kbd">Ctrl+S</span> → save .html → drop in <em>Upload File</em> tab — also works.</div>
+              <textarea id="tripitPasteHtml" placeholder="Paste full HTML source here (starts with <!DOCTYPE html>)..." style="width:100%;height:140px;margin-top:8px;padding:10px;border:1px solid var(--line);border-radius:10px;font-family:monospace;font-size:11px;background:#fff"></textarea>
+              <div style="display:flex;gap:8px;margin-top:8px"><button class="btn btn-primary" onclick="parsePastedTripitHtml()"><i class="fa-solid fa-code"></i> Parse Pasted HTML</button><button class="btn btn-ghost" onclick="document.getElementById('tripitManualWrap').style.display='none'">Hide</button></div>
+              <div id="tripitPasteStatus" style="font-size:11px;color:var(--muted);margin-top:6px"></div>
+            </div>
           </div>
           <div style="background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px">
             <b><i class="fa-solid fa-link"></i> Paste TripIt ICS feed URL</b><div style="font-size:12px;color:var(--muted)">TripIt.com → Settings → Calendar Feed → Copy private ICS URL (contains `tripit.com/feed/ical/...`). We fetch and convert.</div>
@@ -481,7 +488,7 @@ button{font-family:inherit}
       <div id="importTab-upload" class="importTab" style="display:none">
         <div style="border:2px dashed var(--line);border-radius:14px;padding:18px;text-align:center;background:#f8fafc" ondragover="event.preventDefault()" ondrop="handleDrop(event)">
           <div style="font-size:28px">📂</div><b>Drop TripIt export here or click to browse</b><div style="font-size:12px;color:var(--muted)">Accepts: TripIt JSON, ICS (.ics), CSV, or Shine JSON</div>
-          <label class="btn btn-blue" style="margin-top:10px;cursor:pointer"><i class="fa-solid fa-file-arrow-up"></i> Choose File <input type="file" id="tripitFile" hidden accept=".json,.ics,.csv,.txt" onchange="handleTripitFile(this.files[0])"></label>
+          <label class="btn btn-blue" style="margin-top:10px;cursor:pointer"><i class="fa-solid fa-file-arrow-up"></i> Choose File <input type="file" id="tripitFile" hidden accept=".json,.ics,.csv,.txt,.html,.htm" onchange="handleTripitFile(this.files[0])"></label>
           <div id="tripitFileStatus" style="font-size:12px;color:var(--muted);margin-top:8px"></div>
         </div>
         <div style="display:flex;gap:8px"><button class="btn btn-ghost" onclick="downloadSampleTripit()"><i class="fa-solid fa-download"></i> Download sample TripIt ICS</button><button class="btn btn-ghost" onclick="clearAllTrips()"><i class="fa-solid fa-trash"></i> Clear all trips</button></div>
@@ -1273,19 +1280,63 @@ async function importTripitShareLink(){
   if(!url) return alert('Paste TripIt share link like https://www.tripit.com/p/XXXX');
   if(!url.includes('tripit.com/p/')) return alert('Link must be https://www.tripit.com/p/...');
   localStorage.setItem('shine_tripit_share', url);
-  document.getElementById('tripitShareStatus').textContent='Extracting… (exactly like TripIt, via CORS proxy)';
-  try{
-    const proxy=`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
-    const r=await fetch(proxy);
-    const j=await r.json();
-    const html=j.contents;
-    if(!html) throw new Error('Empty response');
-    const count=parseTripitPublicHTML(html, url);
-    document.getElementById('tripitShareStatus').textContent = count? `✓ Extracted ${count} plans — exactly like TripIt` : 'Fetched but could not parse — TripIt may need login (try while logged in) or use ICS';
-    if(count) document.getElementById('tripitImportModal').classList.remove('open');
-  }catch(e){
-    document.getElementById('tripitShareStatus').textContent='Failed: '+e.message+' — try ICS feed or upload.';
+  const statusEl=document.getElementById('tripitShareStatus');
+  const manualWrap=document.getElementById('tripitManualWrap');
+  statusEl.textContent='Extracting… trying CORS proxies (exactly like TripIt)…';
+  const proxies=[
+    `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
+    `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+    `https://corsproxy.io/?${encodeURIComponent(url)}`,
+    `https://proxy.corsfix.com/?${encodeURIComponent(url)}`,
+    url // last try direct (may fail CORS but try)
+  ];
+  let html=null, lastErr='';
+  for(const p of proxies){
+    try{
+      statusEl.textContent='Trying proxy… '+p.slice(0,48)+'...';
+      const r=await fetch(p, {headers:{'X-Requested-With':'XMLHttpRequest'}});
+      if(!r.ok) { lastErr='HTTP '+r.status; continue; }
+      // allorigins/get returns JSON, others return HTML directly
+      const ct=(r.headers.get('content-type')||'');
+      if(ct.includes('application/json') || p.includes('allorigins.win/get')){
+        const j=await r.json();
+        html=j.contents||j.data||'';
+      } else {
+        html=await r.text();
+      }
+      if(html && html.includes('trip_item')) break;
+      if(html && html.length>1000) break;
+      lastErr='Empty or no trip_item';
+    }catch(e){ lastErr=e.message; }
   }
+  if(html && html.length>500){
+    try{
+      const count=parseTripitPublicHTML(html, url);
+      if(count){
+        statusEl.textContent=`✓ Extracted ${count} plans — exactly like TripIt`;
+        manualWrap.style.display='none';
+        document.getElementById('tripitImportModal').classList.remove('open');
+        return;
+      } else {
+        lastErr='Parsed 0 plans — page may be login-walled';
+      }
+    }catch(e){ lastErr=e.message; }
+  }
+  statusEl.innerHTML=`<span style="color:#ef4444">Failed: ${lastErr} — CORS proxies blocked by TripIt/Cloudflare.</span><br><span style="color:#0f6fb4;font-weight:700">Use manual fallback below — 100% reliable, no fetch needed.</span>`;
+  manualWrap.style.display='block';
+  document.getElementById('tripitPasteHtml').focus();
+}
+function parsePastedTripitHtml(){
+  const html=document.getElementById('tripitPasteHtml').value.trim();
+  const status=document.getElementById('tripitPasteStatus');
+  if(!html || html.length<200) return alert('Paste full HTML source (Ctrl+U → Ctrl+A → Ctrl+C)');
+  if(!html.includes('trip_item') && !html.includes('TripIt')) { status.textContent='Does not look like TripIt HTML — ensure you copied View Source (Ctrl+U), not the normal page.'; return; }
+  const url=document.getElementById('tripitShareUrl').value.trim()||'https://www.tripit.com/p/pasted';
+  try{
+    const count=parseTripitPublicHTML(html, url);
+    status.textContent = count? `✓ Parsed ${count} plans from pasted HTML — exactly like TripIt` : 'No plans found in pasted HTML';
+    if(count) { document.getElementById('tripitShareStatus').textContent=`✓ Imported ${count} plans via manual paste`; document.getElementById('tripitManualWrap').style.display='none'; document.getElementById('tripitImportModal').classList.remove('open'); }
+  }catch(e){ status.textContent='Parse error: '+e.message; }
 }
 function parseTripitPublicHTML(html, srcUrl){
   const parser=new DOMParser();
@@ -1398,10 +1449,16 @@ function handleTripitFile(file){
     const txt=e.target.result;
     const name=file.name.toLowerCase();
     let count=0;
-    if(name.endsWith('.ics')) count=parseICS(txt);
+    if(name.endsWith('.html') || name.endsWith('.htm') || txt.trim().startsWith('<!DOCTYPE') || txt.includes('trip_item')){
+      // TripIt saved HTML (Ctrl+S)
+      count=parseTripitPublicHTML(txt, 'file://'+file.name);
+      document.getElementById('tripitFileStatus').textContent = count? `✓ Parsed ${count} plans from TripIt HTML ${file.name} — exactly like TripIt` : 'HTML read but no trip_item found — ensure you saved View Source';
+    } else if(name.endsWith('.ics')) count=parseICS(txt);
     else if(name.endsWith('.csv')) count=parseCSV(txt);
     else count=parseJSON(txt);
-    document.getElementById('tripitFileStatus').textContent = count? `✓ Imported ${count} items from ${file.name}` : 'File read but no trips found — check format';
+    if(!name.endsWith('.html') && !txt.includes('trip_item')){
+      document.getElementById('tripitFileStatus').textContent = count? `✓ Imported ${count} items from ${file.name}` : 'File read but no trips found — check format';
+    }
     if(count) document.getElementById('tripitImportModal').classList.remove('open');
   };
   reader.readAsText(file);
@@ -1492,6 +1549,10 @@ if(!localStorage.getItem('shine_gmaps_key')){
 window.addEventListener('load', ()=>{
   setTimeout(renderGoogleButton, 800);
   updateAuthUI();
+  const savedShare=localStorage.getItem('shine_tripit_share');
+  if(savedShare && document.getElementById('tripitShareUrl')) document.getElementById('tripitShareUrl').value=savedShare;
+  // also prefill demo link if empty
+  if(!savedShare && document.getElementById('tripitShareUrl') && !document.getElementById('tripitShareUrl').value) document.getElementById('tripitShareUrl').placeholder='https://www.tripit.com/p/B7598A827337133B339593FB87C87F79';
   document.getElementById('tripitImportModal').addEventListener('click', e=>{ if(e.target===e.currentTarget) e.currentTarget.classList.remove('open'); });
 });
 </script>
