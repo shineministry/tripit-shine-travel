@@ -246,8 +246,10 @@ button{font-family:inherit}
         <div style="font-weight:800;font-size:18px;display:flex;gap:10px;align-items:center"><span id="tripTitle">—</span> <span id="tripDates" class="pill"></span></div>
         <div style="font-size:12px;color:var(--muted)" id="tripSubtitle">Select or create a trip</div>
       </div>
-      <div style="display:flex;gap:8px">
-        <button class="btn btn-ghost" onclick="exportICS()"><i class="fa-solid fa-calendar-plus"></i> Add to Calendar</button>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-ghost" onclick="shareTripLink()"><i class="fa-solid fa-share-nodes"></i> Share Trip</button>
+        <button class="btn btn-ghost" onclick="addToGoogleCalendar()"><i class="fa-brands fa-google"></i> Add to Google Calendar</button>
+        <button class="btn btn-ghost" onclick="exportICS()" title="Download .ics for any calendar"><i class="fa-solid fa-calendar-plus"></i> .ics</button>
         <button class="btn btn-primary" onclick="openModal()"><i class="fa-solid fa-plus"></i> Add Plan</button>
       </div>
     </div>
@@ -505,6 +507,7 @@ const TYPES = [
   {id:'tour', label:'Tour', icon:'fa-flag', color:'#0f6fb4'},
   {id:'meeting', label:'Meeting', icon:'fa-handshake', color:'#0f6fb4'},
   {id:'transportation', label:'Transportation', icon:'fa-bus', color:'#0f6fb4'},
+  {id:'wait', label:'Airport Wait', icon:'fa-hourglass-half', color:'#ff6b35'},
 ];
 
 let trips = JSON.parse(localStorage.getItem('shine_trips')||'null') || [];
@@ -776,20 +779,103 @@ function exportJSON(){
   const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='tripit-shine-travel.json'; a.click(); URL.revokeObjectURL(url);
 }
 function exportICS(){
+  if(!activeTripId) return alert('Create a trip first');
   let ics='BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//TripIt Shine//EN\r\n';
   segments.filter(s=>s.tripId===activeTripId).forEach(s=>{
     const dt = s.date.replace(/-/g,'')+'T'+s.time.replace(':','')+'00';
-    ics+=`BEGIN:VEVENT\r\nSUMMARY:${s.title}\r\nDTSTART:${dt}\r\nLOCATION:${s.loc}\r\nDESCRIPTION:${s.notes} ${s.conf}\r\nEND:VEVENT\r\n`;
+    // ICS needs UTC — keep simple local
+    ics+=`BEGIN:VEVENT\r\nSUMMARY:${s.title}\r\nDTSTART:${dt}\r\nLOCATION:${(s.loc||'').replace(/\r?\n/g,' ')}\r\nDESCRIPTION:${(s.notes+' '+s.conf).replace(/\r?\n/g,' ')}\r\nEND:VEVENT\r\n`;
   });
   ics+='END:VCALENDAR';
-  const blob=new Blob([ics],{type:'text/calendar'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='tripit-shine.ics'; a.click();
+  const blob=new Blob([ics],{type:'text/calendar'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='tripit-shine.ics'; a.click(); URL.revokeObjectURL(url);
 }
 function shareTrip(){
   const tr=trips.find(t=>t.id===activeTripId);
-  if(navigator.share){ navigator.share({title:tr.name, text:'My TripIt Shine itinerary', url:location.href}); }
-  else { navigator.clipboard.writeText(location.href); alert('Link copied — share your itinerary!'); }
+  if(!tr) return alert('No trip to share');
+  if(navigator.share){ navigator.share({title:tr.name, text:'My TripIt Shine itinerary', url:location.href+'#trip='+tr.id}); }
+  else { navigator.clipboard.writeText(location.href+'#trip='+tr.id); alert('Link copied — share your itinerary!'); }
+}
+function shareTripLink(){
+  const tr=trips.find(t=>t.id===activeTripId);
+  if(!tr) return alert('Create a trip first');
+  const data={trip: tr, plans: segments.filter(s=>s.tripId===activeTripId)};
+  const b64 = btoa(unescape(encodeURIComponent(JSON.stringify(data))));
+  const url = location.origin + location.pathname + '#share=' + b64;
+  // also hash-based trip id for direct open
+  const simpleUrl = location.origin + location.pathname + '#trip=' + tr.id;
+  const html = `
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="font-size:12px;color:var(--muted)">Anyone with link can view (read-only). For edit, they need to import.</div>
+      <div style="display:flex;gap:8px"><input id="shareUrlInput" value="${url}" readonly style="flex:1;padding:10px 12px;border-radius:10px;border:1px solid var(--line);font-size:12px"><button class="btn btn-blue" onclick="navigator.clipboard.writeText(document.getElementById('shareUrlInput').value); alert('Copied!')">Copy</button></div>
+      <div style="font-size:11px;color:var(--muted)">Short link (this device): <span style="font-family:monospace">${simpleUrl}</span> <button class="btn btn-ghost" style="padding:4px 8px;font-size:11px" onclick="navigator.clipboard.writeText('${simpleUrl}'); alert('Copied')">Copy</button></div>
+      <div style="display:flex;gap:8px">
+        <a class="btn btn-ghost" style="flex:1;justify-content:center" href="https://wa.me/?text=${encodeURIComponent('My trip: '+tr.name+' '+url)}" target="_blank"><i class="fa-brands fa-whatsapp"></i> WhatsApp</a>
+        <a class="btn btn-ghost" style="flex:1;justify-content:center" href="mailto:?subject=${encodeURIComponent(tr.name)}&body=${encodeURIComponent(url)}"><i class="fa-solid fa-envelope"></i> Email</a>
+      </div>
+    </div>
+  `;
+  const id='shareModal';
+  let m=document.getElementById(id);
+  if(!m){
+    m=document.createElement('div'); m.id=id; m.className='modal-backdrop open';
+    m.innerHTML=`<div class="modal" style="width:min(560px,100%)"><div class="modal-header"><b><i class="fa-solid fa-share-nodes"></i> Share Trip</b><button class="icon-btn" onclick="document.getElementById('shareModal').remove()"><i class="fa-solid fa-xmark"></i></button></div><div class="modal-body" id="shareModalBody"></div><div class="footer"><button class="btn btn-ghost" onclick="document.getElementById('shareModal').remove()">Close</button></div></div>`;
+    m.addEventListener('click', e=>{ if(e.target===m) m.remove(); });
+    document.body.appendChild(m);
+  } else m.classList.add('open');
+  document.getElementById('shareModalBody').innerHTML=html;
+}
+function addToGoogleCalendar(){
+  const tr=trips.find(t=>t.id===activeTripId);
+  if(!tr) return alert('Create a trip first');
+  const list=segments.filter(s=>s.tripId===activeTripId);
+  if(!list.length) return alert('Add at least one plan, then add to Google Calendar');
+  // Google Calendar: create one event for the trip + each plan as separate event (open tabs)
+  // First, trip-level event
+  const datesTrip = formatGCalDate(tr.from)+'/' + formatGCalDate(tr.to);
+  const urlTrip = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(tr.name)}&dates=${datesTrip}&details=${encodeURIComponent(tr.city+' — '+list.length+' plans — via TripIt Shine')}&location=${encodeURIComponent(tr.city)}`;
+  window.open(urlTrip, '_blank');
+  // Then each plan — ask if user wants all
+  if(confirm(`Trip "${tr.name}" opened in Google Calendar.\n\nAlso add ${list.length} individual plans (Flight, Accommodation etc.) as separate Google Calendar events?`)){
+    list.forEach(s=>{
+      const start = formatGCalDateTime(s.date, s.time);
+      // default 1h duration if no dur parsed
+      const end = formatGCalDateTime(s.date, s.time, 60);
+      const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(s.title)}&dates=${start}/${end}&details=${encodeURIComponent((s.notes||'')+' '+(s.conf||'')+' '+(s.iconNote||''))}&location=${encodeURIComponent(s.loc||'')}`;
+      window.open(url, '_blank');
+    });
+  }
+}
+function formatGCalDate(d){ // YYYYMMDD
+  return d.replace(/-/g,'');
+}
+function formatGCalDateTime(date, time, addMinutes){
+  // returns YYYYMMDDTHHMMSSZ (use local as UTC for simplicity, Google will interpret)
+  const dt = new Date(date+'T'+(time||'09:00')+':00');
+  if(addMinutes) dt.setMinutes(dt.getMinutes()+addMinutes);
+  const pad=n=> String(n).padStart(2,'0');
+  return dt.getUTCFullYear()+pad(dt.getUTCMonth()+1)+pad(dt.getUTCDate())+'T'+pad(dt.getUTCHours())+pad(dt.getUTCMinutes())+'00Z';
 }
 function scrollToItinerary(){ document.getElementById('itinerary').scrollIntoView({behavior:'smooth'}); }
+// handle shared links: #share=base64 or #trip=id
+(function handleSharedLink(){
+  const hash=location.hash||'';
+  if(hash.startsWith('#share=')){
+    try{
+      const data=JSON.parse(decodeURIComponent(escape(atob(hash.slice(7)))));
+      if(data.trip && data.plans){
+        if(!trips.find(t=>t.id===data.trip.id)){
+          trips.push(data.trip);
+          data.plans.forEach(p=> segments.push(p));
+          activeTripId=data.trip.id; save(); render();
+          alert('Shared trip "'+data.trip.name+'" imported — view only. Save to keep.');
+        }
+      }
+    }catch(e){ console.warn('share decode failed',e); }
+  } else if(hash.startsWith('#trip=')){
+    const id=hash.slice(6);
+    if(trips.find(t=>t.id===id)){ activeTripId=id; save(); render(); }
+  }
+})();
 
 // init
 renderTypeGrid();
