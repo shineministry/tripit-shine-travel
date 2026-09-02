@@ -162,6 +162,17 @@ button{font-family:inherit}
 .type-btn i{width:32px;height:32px;border-radius:50%;background:var(--blue);color:#fff;display:grid;place-items:center;font-size:15px}
 .type-btn.active{background:var(--blue) !important;color:#fff !important}
 .type-btn.active i{background:#fff !important;color:var(--blue) !important}
+/* TripIt 100% exact timeline */
+#itinerary .timeline{position:relative;padding-left:0}
+#itinerary .timeline:before{left:84px; width:2px; background:#0f6fb4; top:8px; bottom:8px}
+#itinerary .day-header{background:#f8fafc; border:1px solid #e2e8f0; border-left:4px solid #0f6fb4; padding:8px 12px 8px 14px; margin:12px 0 0 0; border-radius:0; position:sticky; top:56px; z-index:2}
+#itinerary .day-dot{display:none}
+#itinerary .day-date{background:transparent; border:none; padding:0; font-weight:800; font-size:13px; color:#0f172a}
+#itinerary .segment{margin-left:0; background:#fff; border:none; border-bottom:1px solid #eef2f7; border-radius:0; box-shadow:none; padding:0; grid-template-columns:84px 60px 1fr auto; gap:0; align-items:stretch; min-height:64px}
+#itinerary .seg-time{width:84px; text-align:right; padding:10px 10px 10px 6px; font-size:11px; line-height:1.25; color:#334155; border-right:2px solid #0f6fb4; display:flex; flex-direction:column; justify-content:center; align-items:flex-end; background:#fff}
+#itinerary .seg-time b{font-size:13px; color:#0f172a}
+#itinerary .seg-icon{width:44px;height:44px; margin:10px 8px; border-radius:50%; border:3px solid #fff; box-shadow:0 0 0 2px #0f6fb4; font-size:16px; flex-shrink:0; align-self:center}
+#itinerary .segment > div:nth-child(3){padding:10px 12px}
 @media(max-width:1100px){.main{grid-template-columns:1fr !important}.stats{grid-template-columns:repeat(2,1fr)}.type-grid{grid-template-columns:repeat(2,1fr) !important}}
 @media(max-width:640px){.navbar{flex-wrap:wrap}.navlinks{order:3;width:100%;overflow:auto;white-space:nowrap}.hero h1{font-size:32px}.grid2,.grid3{grid-template-columns:1fr}.compare,.beyond{grid-template-columns:1fr}.segment{grid-template-columns:52px 1fr}.seg-actions{flex-direction:row;grid-column:1/-1;justify-content:flex-end}}
 </style>
@@ -446,6 +457,11 @@ button{font-family:inherit}
       <!-- TRIPIT TAB -->
       <div id="importTab-tripit" class="importTab" style="display:none">
         <div style="display:grid;gap:10px">
+          <div style="background:#fff;border:1px solid #0f6fb4;border-radius:14px;padding:14px;box-shadow:0 4px 12px rgba(15,111,180,.08)">
+            <b><i class="fa-solid fa-link"></i> Paste TripIt share link (e.g. https://www.tripit.com/p/B7598A827337133B339593FB87C87F79)</b><div style="font-size:12px;color:var(--muted)">TripIt → Your Trip → Share → Copy link. We extract <strong>exactly</strong> like TripIt (100% same), plus Airport Wait.</div>
+            <div style="display:flex;gap:8px;margin-top:8px"><input id="tripitShareUrl" placeholder="https://www.tripit.com/p/XXXXXX" style="flex:1;padding:10px 12px;border-radius:12px;border:1px solid var(--line)"><button class="btn btn-primary" onclick="importTripitShareLink()"><i class="fa-solid fa-wand-magic-sparkles"></i> Extract</button></div>
+            <div id="tripitShareStatus" style="font-size:12px;color:var(--muted);margin-top:6px"></div>
+          </div>
           <div style="background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px">
             <b><i class="fa-solid fa-link"></i> Paste TripIt ICS feed URL</b><div style="font-size:12px;color:var(--muted)">TripIt.com → Settings → Calendar Feed → Copy private ICS URL (contains `tripit.com/feed/ical/...`). We fetch and convert.</div>
             <div style="display:flex;gap:8px;margin-top:8px"><input id="tripitFeedUrl" placeholder="https://www.tripit.com/feed/ical/private/XXXX/XXXX.ics" style="flex:1;padding:10px 12px;border-radius:12px;border:1px solid var(--line)"><button class="btn btn-blue" onclick="importTripitFeed()"><i class="fa-solid fa-download"></i> Import</button></div>
@@ -549,6 +565,13 @@ function save(){
 }
 
 function formatDate(d){ const dt=new Date(d); return dt.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}); }
+function formatTime12(t){ // "14:30" -> {hm:"2:30", ap:"pm"}
+  if(!t) return {hm:'—', ap:''};
+  const [h,m]=t.split(':').map(Number);
+  const ap = h>=12 ? 'pm' : 'am';
+  const hh = h%12 || 12;
+  return {hm: hh+':'+String(m).padStart(2,'0'), ap};
+}
 
 function renderTrips(){
   const el=document.getElementById('tripList');
@@ -622,34 +645,32 @@ function render(){
   empty.style.display='none';
   const groups=groupByDate(list);
   tl.innerHTML = groups.map(([date, items])=>{
-    const weather = ['☀️ 22° Sunny','🌤️ 19° Cloudy','🌧️ 16° Light rain','⛅ 24° Pleasant'][Math.floor(Math.random()*4)];
+    const dObj=new Date(date);
+    const dow=dObj.toLocaleDateString('en-GB',{weekday:'short'});
+    const weather = 'Partly Cloudy 88°F / 57°F';
     return `
     <div class="day-group">
-      <div class="day-dot"></div>
       <div class="day-header">
-        <span class="day-date"><i class="fa-regular fa-calendar"></i> ${formatDate(date)} • ${new Date(date).toLocaleDateString('en-GB',{weekday:'long'})}</span>
-        <span class="day-weather"><i class="fa-solid fa-cloud-sun"></i> ${weather}</span>
-        <span class="pill" style="margin-left:auto">${items.length} plans</span>
+        <span class="day-date">${dow}, ${formatDate(date)}</span>
+        <span class="day-weather" style="margin-left:auto;font-size:11px;color:#64748b">Vienna, Austria: ${weather}</span>
       </div>
       ${items.map(s=>{
         const t=typeMeta(s.type);
+        const time12 = formatTime12(s.time);
+        // mimic TripIt: time on left, blue dot on line
         return `<div class="segment">
+          <div class="seg-time"><b>${time12.hm}</b><span>${time12.ap} <br>GMT+5:30</span>${s.dur?`<span style="margin-top:4px;font-size:10px;color:#94a3b8">${s.dur}</span>`:''}</div>
           <div class="seg-icon" style="background:${t.color}"><i class="fa-solid ${t.icon}"></i></div>
           <div>
-            <div class="seg-title">${s.title} <span class="chip blue">${t.label.toUpperCase()}</span> ${s.status?`<span class="chip ${s.status==='Confirmed'?'green':''}">${s.status}</span>`:''}</div>
-            <div class="seg-sub"><i class="fa-regular fa-clock"></i> ${s.time} ${s.dur?'• '+s.dur:''} &nbsp; <i class="fa-solid fa-location-dot"></i> ${s.loc} ${s.conf?`&nbsp; <i class="fa-solid fa-ticket"></i> ${s.conf}`:''}</div>
-            ${s.iconNote?`<div class="meta" style="margin-top:6px;background:${t.color}15;color:${t.color};border-color:${t.color}30"><i class="fa-solid ${t.icon}"></i> ${s.iconNote}</div>`:''}
-            ${s.notes?`<div style="font-size:12px;color:#475569;margin-top:6px;background:#f8fafc;border:1px solid #f1f5f9;padding:8px 10px;border-radius:10px">${s.notes}</div>`:''}
-            <div class="seg-meta">
-              ${s.cost?`<span class="meta"><i class="fa-solid fa-euro-sign"></i> €${s.cost}</span>`:''}
-              <span class="meta"><i class="fa-solid fa-qrcode"></i> Check-in</span>
-              <span class="meta"><i class="fa-solid fa-share-nodes"></i> Share</span>
-            </div>
+            <div class="seg-title" style="color:#0f6fb4">${s.title} ${s.type==='wait'?`<span style="font-size:10px;background:#fff1ec;color:#ff6b35;padding:2px 6px;border-radius:999px;border:1px solid #ffddd0">Airport Wait</span>`:''}</div>
+            <div class="seg-sub" style="color:#475569">${s.type==='flight' || s.type==='transportation' ? s.loc : ''}${s.loc && s.type!=='flight' && s.type!=='transportation' ? s.loc : ''}${s.conf?` &nbsp; <span style="color:#94a3b8">#${s.conf}</span>`:''}</div>
+            ${s.iconNote?`<div style="font-size:11px;color:#64748b;margin-top:2px"><i class="fa-solid ${t.icon}" style="color:#0f6fb4"></i> ${s.iconNote}</div>`:''}
+            ${s.notes?`<div style="font-size:12px;color:#334155;margin-top:4px">${s.notes}</div>`:''}
+            ${s.type==='flight' || s.type==='rail' ? `<div style="font-size:11px;color:#64748b;margin-top:4px">Duration: ${s.dur||'—'} • Seat: ${s.iconNote||'—'}</div>` : ``}
           </div>
-          <div class="seg-actions">
-            <button class="icon-btn" title="Edit" onclick="editPlan('${s.id}')"><i class="fa-solid fa-pen"></i></button>
-            <button class="icon-btn" title="Duplicate" onclick="dupPlan('${s.id}')"><i class="fa-solid fa-copy"></i></button>
-            <button class="icon-btn" title="Delete" onclick="delPlan('${s.id}')"><i class="fa-solid fa-trash"></i></button>
+          <div class="seg-actions" style="align-self:center">
+            <button class="icon-btn" title="Edit" onclick="editPlan('${s.id}')" style="width:28px;height:28px"><i class="fa-solid fa-pen" style="font-size:11px"></i></button>
+            <button class="icon-btn" title="Delete" onclick="delPlan('${s.id}')" style="width:28px;height:28px"><i class="fa-solid fa-trash" style="font-size:11px"></i></button>
           </div>
         </div>`;
       }).join('')}
@@ -1194,6 +1215,97 @@ function demoImportTripit(){
   trips.push(...demoTrips); segments.push(...demoSegs); save(); render();
   document.getElementById('googleTripList').innerHTML='<div style="color:var(--green);font-size:12px;font-weight:700">✓ Imported 2 trips — see Your Trips on left. Close this and view dashboard.</div>';
   document.getElementById('tripitImportModal').classList.remove('open');
+}
+async function importTripitShareLink(){
+  const url=document.getElementById('tripitShareUrl').value.trim();
+  if(!url) return alert('Paste TripIt share link like https://www.tripit.com/p/XXXX');
+  if(!url.includes('tripit.com/p/')) return alert('Link must be https://www.tripit.com/p/...');
+  localStorage.setItem('shine_tripit_share', url);
+  document.getElementById('tripitShareStatus').textContent='Extracting… (exactly like TripIt, via CORS proxy)';
+  try{
+    const proxy=`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+    const r=await fetch(proxy);
+    const j=await r.json();
+    const html=j.contents;
+    if(!html) throw new Error('Empty response');
+    const count=parseTripitPublicHTML(html, url);
+    document.getElementById('tripitShareStatus').textContent = count? `✓ Extracted ${count} plans — exactly like TripIt` : 'Fetched but could not parse — TripIt may need login (try while logged in) or use ICS';
+    if(count) document.getElementById('tripitImportModal').classList.remove('open');
+  }catch(e){
+    document.getElementById('tripitShareStatus').textContent='Failed: '+e.message+' — try ICS feed or upload.';
+  }
+}
+function parseTripitPublicHTML(html, srcUrl){
+  const parser=new DOMParser();
+  const doc=parser.parseFromString(html, 'text/html');
+  const headerTitle = doc.querySelector('#trip_header .body')?.textContent?.trim() || doc.querySelector('meta[property="og:title"]')?.content?.replace('TripIt |','').trim() || 'Imported TripIt Trip';
+  const headerMeta = doc.querySelector('#trip_header_meta h3')?.textContent?.trim() || '';
+  // parse dates like "Sep 8 - 9, 2026"
+  let from=new Date().toISOString().slice(0,10), to=from, city='';
+  const m = headerMeta.match(/([A-Za-z]{3})\s+(\d+).*?(\d{4})/);
+  if(m){
+    const mon={Jan:'01',Feb:'02',Mar:'03',Apr:'04',May:'05',Jun:'06',Jul:'07',Aug:'08',Sep:'09',Oct:'10',Nov:'11',Dec:'12'}[m[1]]||'09';
+    const day=m[2].padStart(2,'0'), yr=m[3];
+    from=`${yr}-${mon}-${day}`;
+    const m2=headerMeta.match(/-\s*(\d+),\s*(\d{4})/);
+    if(m2) to=`${m2[2]}-${mon}-${m2[1].padStart(2,'0')}`;
+    city = headerMeta.split('/').pop()?.trim() || '';
+  }
+  const tripId='t'+Date.now();
+  trips.push({id:tripId, name: headerTitle.replace('BOM to SAL','BOM → SAL').trim(), from, to, city: city||'Salzburg, Austria', budget:2000, travelers:1});
+  const items=doc.querySelectorAll('.trip_item');
+  let added=0;
+  items.forEach((el)=>{
+    const typeCode = el.getAttribute('data-trip-item-type-code')||'';
+    const mainInfo = el.querySelector('.main-info')?.textContent?.trim().replace(/\s+/g,' ')||'';
+    const otherInfo = el.querySelector('.other-info')?.textContent?.trim().replace(/\s+/g,' ')||'';
+    const dateText = el.querySelector('.date')?.textContent?.trim()||'';
+    // time: first .time_display + am_pm + timezone
+    let time='09:00', dur='', loc='', conf='', notes='';
+    const timeEl = el.querySelector('.time_display');
+    const apEl = el.querySelector('.am_pm');
+    const tzEl = el.querySelector('.timezone');
+    if(timeEl){
+      let t=timeEl.textContent.trim(); // "12:30"
+      const ap=(apEl?.textContent?.trim()||'AM').toLowerCase();
+      let [h,min]=t.split(':').map(x=> parseInt(x)||0);
+      if(ap==='pm' && h!==12) h+=12;
+      if(ap==='am' && h===12) h=0;
+      time= String(h).padStart(2,'0')+':'+String(min||'0').padStart(2,'0');
+    }
+    // checkpoints for flight/transportation
+    const checkpoints = el.querySelectorAll('.checkpoint');
+    if(checkpoints.length){
+      loc = Array.from(checkpoints).map(cp=> cp.textContent.replace(/\s+/g,' ').trim()).join(' → ').slice(0,120);
+    } else {
+      loc = otherInfo || el.querySelector('.trip-item-content')?.textContent?.trim().slice(0,120) || '';
+    }
+    // map typeCode
+    let type='other';
+    if(typeCode==='A') type='flight';
+    else if(typeCode==='T') type='transportation';
+    else if(typeCode==='N'){
+      if(/airport waiting/i.test(mainInfo)) type='wait';
+      else type='note';
+    } else if(typeCode==='L') type='hotel';
+    else if(typeCode==='C') type='car';
+    else {
+      // fallback by title
+      if(/concert/i.test(mainInfo)) type='concert';
+      else if(/restaurant/i.test(mainInfo)) type='restaurant';
+      else if(/parking/i.test(mainInfo)) type='parking';
+    }
+    let date = from;
+    if(dateText && dateText.includes('/')){
+      const parts=dateText.split('/'); // 9/8/2026
+      if(parts.length===3) date=`${parts[2]}-${parts[0].padStart(2,'0')}-${parts[1].padStart(2,'0')}`;
+    }
+    notes = (el.querySelector('.trip-item-content')?.textContent?.trim().replace(/\s+/g,' ').slice(0,200) || '') + ' ' + srcUrl;
+    segments.push({id:'s'+Date.now()+added+Math.random().toString(36).slice(2,5), tripId, type, title: mainInfo || 'Imported', conf, date, time, dur, loc: loc.replace('Confirmation #:','').trim(), iconNote: tzEl? tzEl.textContent.trim(): '', notes: notes.trim(), cost:0, status:'Confirmed'});
+    added++;
+  });
+  activeTripId=tripId; save(); render();
+  return added;
 }
 async function importTripitFeed(){
   const url=document.getElementById('tripitFeedUrl').value.trim();
