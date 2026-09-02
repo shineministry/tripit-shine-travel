@@ -559,6 +559,19 @@ let docs = JSON.parse(localStorage.getItem('shine_docs')||'null') || [];
   }
   if(!activeTripId && trips.length) activeTripId = trips[0].id;
 })();
+// fix dirty old TripIt import (merged para) — clean and force re-import line-by-line
+(function fixDirtyTripit(){
+  const dirty = segments.filter(s=> !s.detailsHtml && s.notes && /Traveler Info Full Name/.test(s.notes));
+  if(dirty.length){
+    const dirtyIds = new Set(dirty.map(s=> s.tripId));
+    trips = trips.filter(t=> !dirtyIds.has(t.id));
+    segments = segments.filter(s=> !dirtyIds.has(s.tripId));
+    if(!trips.find(t=>t.id===activeTripId)) activeTripId = trips[0]?.id || null;
+    save();
+    // will alert after load
+    setTimeout(()=> alert('Cleaned dirty TripIt import (old merged para). Please re-import your share link:\nhttps://www.tripit.com/p/B7598A827337133B339593FB87C87F79\n\nSteps: Import TripIt → Paste link → Parse Pasted HTML (Ctrl+U) — now shows line-by-line bold Q&A like TripIt.'), 900);
+  }
+})();
 let filter = 'all';
 let selectedType = 'flight';
 let editingId = null;
