@@ -1228,6 +1228,14 @@ END:VCALENDAR`;
   const blob=new Blob([ics],{type:'text/calendar'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='tripit-sample.ics'; a.click();
 }
 function clearAllTrips(){ if(confirm('Clear all trips and plans? Cannot undo.')){ trips=[]; segments=[]; save(); render(); alert('Cleared'); } }
+const GOOGLE_CLIENT_ID_DEFAULT = "518153662397-mrr09dgfsfvdc9c1o1jcit4dstftou5v.apps.googleusercontent.com";
+// pre-seed default client id so user doesn't need to paste
+if(!localStorage.getItem('shine_google_client_id')){
+  localStorage.setItem('shine_google_client_id', GOOGLE_CLIENT_ID_DEFAULT);
+}
+if(!localStorage.getItem('shine_gmaps_key')){
+  // optional: you can also use same project for Maps if you enable Maps JS API — key must be created separately
+}
 // auto-init google button when library loads
 window.addEventListener('load', ()=>{
   setTimeout(renderGoogleButton, 800);
