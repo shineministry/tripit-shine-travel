@@ -186,15 +186,15 @@ button{font-family:inherit}
 #itinerary .day-header{background:#f8fafc; border:1px solid #e2e8f0; border-left:4px solid #0f6fb4; padding:8px 12px 8px 14px; margin:12px 0 0 0; border-radius:0; position:sticky; top:56px; z-index:2}
 #itinerary .day-dot{display:none}
 #itinerary .day-date{background:transparent; border:none; padding:0; font-weight:800; font-size:13px; color:#0f172a}
-#itinerary .segment{margin-left:0; background:#fff; border:none; border-bottom:1px solid #eef2f7; border-radius:0; box-shadow:none; padding:0; grid-template-columns:84px 60px 1fr auto; gap:0; align-items:stretch; min-height:92px}
+#itinerary .segment{margin-left:0; background:#fff; border:none; border-bottom:1px solid #eef2f7; border-radius:0; box-shadow:none; padding:6px 0; grid-template-columns:84px 60px 1fr auto; gap:0; align-items:stretch; min-height:148px}
 #itinerary .seg-time{width:84px; text-align:right; padding:10px 12px 10px 6px; font-size:11px; line-height:1.25; color:#334155; border-right:2px solid #cbd5e1; display:flex; flex-direction:column; justify-content:center; align-items:flex-end; background:#fff; transition:all .4s; position:relative; z-index:2}
 #itinerary .timeline.glow .seg-time{border-right-color:#0f6fb4}
 #itinerary .seg-time b{font-size:13px; color:#0f172a}
 #itinerary .seg-icons{display:flex;flex-direction:column;align-items:center;justify-content:space-between;width:60px;padding:6px 0;position:relative; z-index:1}
 #itinerary .seg-icons::before{content:""; position:absolute; top:18px; bottom:18px; left:50%; width:2px; background:#cbd5e1; transform:translateX(-50%); z-index:0; transition:all .4s}
 #itinerary .timeline.glow .seg-icons::before, #itinerary .segment.glow .seg-icons::before, #itinerary .segment.glow-top .seg-icons::before, #itinerary .segment.glow-middle .seg-icons::before, #itinerary .segment.glow-bottom .seg-icons::before{background:#0f6fb4}
-#itinerary .seg-icon{width:38px;height:38px; border-radius:50%; border:3px solid #fff; box-shadow:0 0 0 2px #cbd5e1; font-size:14px; flex-shrink:0; display:grid;place-items:center; transition:all .4s; position:relative; color:#fff; background:#94a3b8 !important}
-#itinerary .seg-icon.middle{width:32px;height:32px; font-size:12px; border-width:2px; display:none}
+#itinerary .seg-icon{width:46px;height:46px; border-radius:50%; border:3px solid #fff; box-shadow:0 0 0 2px #cbd5e1; font-size:16px; flex-shrink:0; display:grid;place-items:center; transition:all .4s; position:relative; color:#fff; background:#94a3b8 !important}
+#itinerary .seg-icon.middle{width:36px;height:36px; font-size:13px; border-width:2px; display:none}
 #itinerary .seg-line{width:2px; flex:1; min-height:10px; background:transparent; margin:2px 0; transition:all .4s}
 #itinerary .segment.glow .seg-icon{animation:none}
 #itinerary .segment.glow-top .seg-icon.top{background:#0f6fb4 !important; border:3px solid #fff; box-shadow:0 0 0 2px #0f6fb4, 0 0 12px rgba(15,111,180,.70) !important; animation:iconGlow 1.2s ease-in-out infinite}
@@ -794,13 +794,13 @@ function getImportantHtml(s){
   // TripIt: show only important big text, rest under dropdown — like screenshot
   const d=s.extraData||{};
   let html='';
-  const big = (label, val)=> val? `<div style="font-size:13px;color:#334155;margin-top:2px"><span style="font-weight:600">${label}</span> ${val}</div>` : '';
+  const big = (label, val)=> val? `<div style="font-size:14px;color:#334155;margin-top:2px"><span style="font-weight:600">${label}</span> ${val}</div>` : '';
   if(s.type==='flight'){
     if(d.fFlightNo || d.fAirline) html+= big('Flight Number', (d.fAirline? d.fAirline+' ':'') + (d.fFlightNo||''));
     if(d.fSeat) html+= big('Seat(s)', d.fSeat);
     // Arrive line like TripIt: Arrive 8/9/2026 9:15 am GMT+5:30
     const arrDate=d.fArrDate||s.date, arrTime=d.fArrTime||s.time;
-    if(arrDate && arrTime){ const t12=formatTime12(arrTime); html+= `<div style="font-size:13px;color:#334155;margin-top:2px">Arrive ${arrDate} ${t12.hm} ${t12.ap} GMT+5:30</div>`; }
+    if(arrDate && arrTime){ const t12=formatTime12(arrTime); html+= `<div style="font-size:14px;color:#334155;margin-top:2px">Arrive ${arrDate} ${t12.hm} ${t12.ap} GMT+5:30</div>`; }
     else if(s.dur) html+= big('Duration', s.dur);
   } else if(s.type==='car'){
     // TripIt car shows only Arrive line big
@@ -1027,7 +1027,7 @@ function render(){
             <div class="seg-icon bottom" style="background:${segState==='near-to' || segState==='glow-middle' ? t.color : '#94a3b8'}"><i class="fa-solid ${t.icon}"></i></div>
           </div>
           <div id="seg-${s.id}" onclick="togglePlanDetails('${s.id}')" style="cursor:pointer">
-            <div class="seg-title" style="color:#0f6fb4;font-size:14px;font-weight:700">${s.title} ${s.type==='wait'?`<span style="font-size:10px;background:#fff1ec;color:#ff6b35;padding:2px 6px;border-radius:999px;border:1px solid #ffddd0">Airport Wait</span>`:''}</div>
+            <div class="seg-title" style="color:#0f6fb4;font-size:16px;font-weight:700">${s.title} ${s.type==='wait'?`<span style="font-size:10px;background:#fff1ec;color:#ff6b35;padding:2px 6px;border-radius:999px;border:1px solid #ffddd0">Airport Wait</span>`:''}</div>
             <div style="margin-top:4px">${getImportantHtml(s)}</div>
             ${s.detailsHtml ? `<div id="more-${s.id}" style="display:none;margin-top:8px;background:#fcfdff;border:1px solid #eef2f7;border-radius:10px;padding:8px 10px">${s.detailsHtml}</div><button id="toggle-${s.id}" onclick="event.stopPropagation(); togglePlanDetails('${s.id}')" style="margin-top:6px;font-size:12px;color:var(--blue);background:none;border:1px solid var(--line);padding:4px 10px;border-radius:999px;cursor:pointer">▸ Actions</button>` : (s.notes?`<div style="font-size:12px;color:#334155;margin-top:6px;white-space:pre-line">${s.notes}</div>`:'')}
           </div>
