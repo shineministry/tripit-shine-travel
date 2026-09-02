@@ -186,7 +186,7 @@ button{font-family:inherit}
 #itinerary .day-header{background:#f8fafc; border:1px solid #e2e8f0; border-left:4px solid #0f6fb4; padding:8px 12px 8px 14px; margin:12px 0 0 0; border-radius:0; position:sticky; top:56px; z-index:2}
 #itinerary .day-dot{display:none}
 #itinerary .day-date{background:transparent; border:none; padding:0; font-weight:800; font-size:13px; color:#0f172a}
-#itinerary .segment{margin-left:0; background:#fff; border:none; border-bottom:1px solid #eef2f7; border-radius:0; box-shadow:none; padding:0; grid-template-columns:84px 60px 1fr auto; gap:0; align-items:stretch; min-height:88px}
+#itinerary .segment{margin-left:0; background:#fff; border:none; border-bottom:1px solid #eef2f7; border-radius:0; box-shadow:none; padding:0; grid-template-columns:84px 60px 1fr auto; gap:0; align-items:stretch; min-height:200px}
 #itinerary .seg-time{width:84px; text-align:right; padding:10px 10px 10px 6px; font-size:11px; line-height:1.25; color:#334155; border-right:2px solid #cbd5e1; display:flex; flex-direction:column; justify-content:center; align-items:flex-end; background:#fff; transition:all .4s}
 #itinerary .timeline.glow .seg-time{border-right-color:#0f6fb4}
 #itinerary .seg-time b{font-size:13px; color:#0f172a}
@@ -791,6 +791,38 @@ function formatTime12(t){ // "14:30" -> {hm:"2:30", ap:"pm"}
   const hh = h%12 || 12;
   return {hm: hh+':'+String(m).padStart(2,'0'), ap};
 }
+function getImportantHtml(s){
+  const d=s.extraData||{};
+  let html='';
+  const big = (label, val)=> val? `<div style="font-size:15px;color:#0f172a;margin-top:4px;line-height:1.5"><span style="font-weight:800">${label}</span> ${val}</div>` : '';
+  if(s.type==='flight'){
+    if(d.fFlightNo || d.fAirline) html+= big('Flight Number', (d.fAirline? d.fAirline+' ':'') + (d.fFlightNo||''));
+    if(d.fSeat) html+= big('Seat(s)', d.fSeat);
+    const arrDate=d.fArrDate||s.date, arrTime=d.fArrTime||s.time;
+    if(arrDate && arrTime){ const t12=formatTime12(arrTime); html+= `<div style="font-size:15px;color:#0f172a;margin-top:4px;line-height:1.5">Arrive ${arrDate} ${t12.hm} ${t12.ap} GMT+5:30</div>`; }
+  } else if(s.type==='car'){
+    const arrDate=d.fDropoffDate||d.fPickupDate||s.date, arrTime=d.fDropoffTime||d.fPickupTime||s.time;
+    if(arrDate && arrTime){ const t12=formatTime12(arrTime); html+= `<div style="font-size:15px;color:#0f172a">Arrive: ${arrDate} ${t12.hm} ${t12.ap} GMT+5:30</div>`; }
+    if(d.fCarType) html+= big('Car Type', d.fCarType);
+  } else if(s.type==='hotel'){
+    if(d.fHotelName) html+= big('Hotel', d.fHotelName);
+    if(d.fCheckinDate) html+= big('Check in', d.fCheckinDate + (d.fCheckinTime?' '+d.fCheckinTime:''));
+  } else if(s.type==='wait' || s.type==='note'){
+    html='';
+  } else {
+    if(s.loc) html+= `<div style="font-size:15px;color:#0f172a">${s.loc}</div>`;
+  }
+  if(!html && s.loc) html+= `<div style="font-size:15px;color:#0f172a">${s.loc}</div>`;
+  return html;
+}
+function togglePlanDetails(id){
+  const el=document.getElementById('more-'+id);
+  const btn=document.getElementById('toggle-'+id);
+  if(!el) return;
+  const isHidden = el.style.display==='none' || !el.style.display || el.style.display==='';
+  el.style.display = isHidden ? 'block' : 'none';
+  if(btn) btn.textContent = isHidden ? '▾ Show less' : '▸ Actions';
+}
 
 function toggleTripsDropdown(e){ e.stopPropagation(); document.getElementById('navTripsDropdown').classList.toggle('open'); }
 function closeTripsDropdown(){ document.getElementById('navTripsDropdown').classList.remove('open'); }
@@ -989,7 +1021,7 @@ function render(){
             <div class="seg-icon bottom" style="background:${segState==='near-to' || segState==='glow-middle' ? t.color : '#94a3b8'}"><i class="fa-solid ${t.icon}"></i></div>
           </div>
           <div>
-            <div class="seg-title" style="color:#0f6fb4">${s.title} ${s.type==='wait'?`<span style="font-size:10px;background:#fff1ec;color:#ff6b35;padding:2px 6px;border-radius:999px;border:1px solid #ffddd0">Airport Wait</span>`:''}</div>
+            <div class="seg-title" style="color:#0f6fb4;font-size:17px;font-weight:800;letter-spacing:-0.01em">${s.title} ${s.type==='wait'?`<span style="font-size:10px;background:#fff1ec;color:#ff6b35;padding:2px 6px;border-radius:999px;border:1px solid #ffddd0">Airport Wait</span>`:''}</div>
             ${s.subLabel ? `<div style="font-size:12px;color:#334155">${s.subLabel} ${time12.hm} ${time12.ap} GMT+5:30</div>` : ''}
             ${s.subLabel ? `<div style="font-size:12px;color:#475569">${s.loc || '51'}</div>` : `<div class="seg-sub" style="color:#475569">${s.type==='flight' || s.type==='transportation' ? s.loc : ''}${s.loc && s.type!=='flight' && s.type!=='transportation' ? s.loc : ''}${s.conf?` &nbsp; <span style="color:#94a3b8">#${s.conf}</span>`:''}</div>`}
             ${s.iconNote && s.type!=='wait' && s.type!=='car' ?`<div style="font-size:11px;color:#64748b;margin-top:2px"><i class="fa-solid ${t.icon}" style="color:#0f6fb4"></i> ${s.iconNote}</div>`:''}
