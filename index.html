@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TripIt Shine Travel — Your Trips, Perfectly Organized. Better than TripIt.</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<style>
+:root{
+  --blue:#0f6fb4;
+  --blue-dark:#0a4f82;
+  --blue-light:#e8f3fe;
+  --orange:#ff6b35;
+  --orange-dark:#e55a28;
+  --cyan:#00b4d8;
+  --green:#0ea573;
+  --bg:#f6f8fb;
+  --card:#ffffff;
+  --text:#0f172a;
+  --muted:#64748b;
+  --line:#e2e8f0;
+  --radius:16px;
+  --shadow:0 8px 30px rgba(15,111,180,.08);
+  --shadow-lg:0 18px 50px rgba(15,23,42,.12);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Inter,sans-serif;background:var(--bg);color:var(--text);line-height:1.5}
+a{color:inherit;text-decoration:none}
+button{font-family:inherit}
+.topbar{background:#0b2a46;color:#fff;font-size:13px;padding:7px 0;text-align:center}
+.topbar span{color:#7dd3ff;font-weight:600}
+.navbar{position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:12px 24px;gap:16px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;font-family:"Plus Jakarta Sans",sans-serif;font-size:20px;letter-spacing:-.02em}
+.brand-mark{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,var(--blue),#19a7e8);display:grid;place-items:center;color:#fff;font-size:18px;box-shadow:0 6px 14px rgba(15,111,180,.3)}
+.navlinks{display:flex;gap:22px;font-weight:600;font-size:14px;color:#334155}
+.navlinks a{padding:6px 0;border-bottom:2px solid transparent}
+.navlinks a.active{color:var(--blue);border-color:var(--blue)}
+.nav-actions{display:flex;align-items:center;gap:10px}
+.btn{border:none;border-radius:999px;padding:10px 18px;font-weight:700;font-size:14px;cursor:pointer;transition:.2s;display:inline-flex;align-items:center;gap:8px}
+.btn-primary{background:var(--orange);color:#fff;box-shadow:0 8px 18px rgba(255,107,53,.3)}
+.btn-primary:hover{background:var(--orange-dark);transform:translateY(-1px)}
+.btn-ghost{background:#fff;border:1px solid var(--line);color:var(--text)}
+.btn-ghost:hover{border-color:var(--blue);color:var(--blue)}
+.btn-blue{background:var(--blue);color:#fff}
+.btn-blue:hover{background:var(--blue-dark)}
+.hero{background:linear-gradient(180deg,#ffffff 0%,#f0f7ff 100%);padding:36px 24px 22px;display:grid;grid-template-columns:1.15fr .85fr;gap:28px;max-width:1280px;margin:0 auto;align-items:center}
+.hero h1{font-family:"Plus Jakarta Sans",sans-serif;font-size:44px;line-height:1.05;letter-spacing:-.03em}
+.hero h1 em{font-style:normal;color:var(--blue)}
+.hero p{color:var(--muted);font-size:16px;margin:14px 0 18px;max-width:560px}
+.hero-badges{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px}
+.badge{font-size:12px;font-weight:700;padding:6px 10px;border-radius:999px;background:#fff;border:1px solid var(--line);display:flex;align-items:center;gap:6px}
+.badge i{color:var(--blue)}
+.hero-card{background:#fff;border-radius:20px;box-shadow:var(--shadow-lg);border:1px solid var(--line);overflow:hidden}
+.hero-card-head{background:linear-gradient(135deg,var(--blue),#1a9de0);color:#fff;padding:16px 18px;display:flex;justify-content:space-between;align-items:center}
+.hero-card-body{padding:16px}
+.mini-timeline{position:relative;padding-left:22px}
+.mini-timeline:before{content:"";position:absolute;left:7px;top:6px;bottom:6px;width:2px;background:#e2e8f0}
+.mini-item{display:flex;gap:12px;padding:10px 0;border-bottom:1px dashed #eef2f7}
+.mini-item:last-child{border:none}
+.mini-icon{width:32px;height:32px;border-radius:10px;display:grid;place-items:center;color:#fff;font-size:14px;flex-shrink:0;margin-top:2px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;max-width:1280px;margin:8px auto 0;padding:0 24px}
+.stat{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px 16px;box-shadow:var(--shadow);display:flex;justify-content:space-between;align-items:center}
+.stat b{font-size:22px}
+.stat span{font-size:12px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+.main{max-width:1280px;margin:22px auto;padding:0 24px;display:grid;grid-template-columns:280px 1fr 340px;gap:18px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow)}
+.card-pad{padding:16px}
+.card-title{font-weight:800;font-size:13px;letter-spacing:.07em;text-transform:uppercase;color:#0f172a;display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.pill{font-size:11px;font-weight:800;padding:4px 8px;border-radius:999px;background:var(--blue-light);color:var(--blue)}
+.trip-list{display:flex;flex-direction:column;gap:10px}
+.trip{border:1px solid var(--line);border-radius:14px;padding:12px;cursor:pointer;transition:.15s;background:#fff}
+.trip.active{border-color:var(--blue);box-shadow:0 0 0 3px rgba(15,111,180,.12);background:#f0f7ff}
+.trip:hover{border-color:#cbd5e1}
+.trip h4{font-size:14px;line-height:1.2}
+.trip small{color:var(--muted);font-size:12px}
+.trip-meta{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.chip{font-size:11px;font-weight:700;padding:4px 8px;border-radius:999px;background:#f1f5f9}
+.chip.blue{background:#e0f0ff;color:var(--blue)}
+.chip.orange{background:#fff1ec;color:var(--orange-dark)}
+.chip.green{background:#e6f9f0;color:var(--green)}
+.filters{display:flex;flex-wrap:wrap;gap:8px}
+.filter{font-size:12px;font-weight:700;padding:7px 10px;border-radius:999px;border:1px solid var(--line);background:#fff;cursor:pointer;display:flex;align-items:center;gap:6px}
+.filter.active{background:var(--text);color:#fff;border-color:var(--text)}
+.timeline{position:relative}
+.timeline:before{content:"";position:absolute;left:18px;top:10px;bottom:10px;width:2px;background:#e2e8f0}
+.day-group{margin-bottom:18px;position:relative}
+.day-header{position:sticky;top:64px;z-index:2;background:var(--bg);padding:6px 0 6px 44px;font-weight:800;font-size:13px;color:#0f172a;display:flex;align-items:center;gap:10px}
+.day-dot{position:absolute;left:10px;top:10px;width:18px;height:18px;border-radius:50%;background:#fff;border:3px solid var(--blue);box-shadow:0 0 0 4px var(--bg)}
+.day-date{background:#fff;border:1px solid var(--line);padding:4px 10px;border-radius:999px;font-size:12px}
+.day-weather{margin-left:auto;font-size:12px;color:var(--muted);display:flex;gap:8px;align-items:center}
+.segment{margin-left:44px;background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px;box-shadow:var(--shadow);display:grid;grid-template-columns:52px 1fr auto;gap:12px;align-items:start;margin-bottom:10px;transition:.15s}
+.segment:hover{transform:translateY(-1px);box-shadow:var(--shadow-lg)}
+.seg-icon{width:52px;height:52px;border-radius:14px;display:grid;place-items:center;color:#fff;font-size:20px}
+.seg-title{font-weight:800;font-size:14px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.seg-sub{font-size:12px;color:var(--muted);margin-top:2px}
+.seg-meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.meta{font-size:11px;font-weight:700;padding:5px 8px;border-radius:999px;background:#f8fafc;border:1px solid #eef2f7;display:inline-flex;align-items:center;gap:5px}
+.seg-actions{display:flex;flex-direction:column;gap:6px;align-items:flex-end}
+.icon-btn{width:34px;height:34px;border-radius:10px;border:1px solid var(--line);background:#fff;display:grid;place-items:center;cursor:pointer;color:#64748b}
+.icon-btn:hover{color:var(--blue);border-color:var(--blue)}
+.right-col{display:flex;flex-direction:column;gap:16px}
+.map{height:260px;border-radius:16px;overflow:hidden;position:relative;background:linear-gradient(135deg,#dbeafe,#bfdbfe);border:1px solid var(--line);display:grid;place-items:center}
+.map-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(15,111,180,.08) 1px, transparent 1px), linear-gradient(90deg, rgba(15,111,180,.08) 1px, transparent 1px);background-size:32px 32px}
+.map-pin{position:absolute;width:36px;height:36px;background:var(--orange);color:#fff;border-radius:50% 50% 50% 0;transform:rotate(-45deg);display:grid;place-items:center;box-shadow:0 10px 20px rgba(0,0,0,.2)}
+.map-pin i{transform:rotate(45deg)}
+.progress{height:8px;background:#e2e8f0;border-radius:999px;overflow:hidden}
+.progress > div{height:100%;background:linear-gradient(90deg,var(--blue),var(--cyan));border-radius:999px}
+.pack-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f1f5f9;font-size:13px}
+.pack-item:last-child{border:none}
+.compare{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.compare-card{border-radius:14px;padding:12px;border:1px solid var(--line)}
+.compare-card.pro{border-color:var(--orange);background:#fff7f3}
+.tick{color:var(--green)} .cross{color:#94a3b8}
+.modal-backdrop{position:fixed;inset:0;background:rgba(15,23,42,.55);backdrop-filter:blur(6px);display:none;place-items:center;z-index:80;padding:18px}
+.modal-backdrop.open{display:grid}
+.modal{width:min(760px,100%);background:#fff;border-radius:20px;box-shadow:0 30px 80px rgba(0,0,0,.3);overflow:hidden;max-height:90vh;display:flex;flex-direction:column}
+.modal head{display:block}
+.modal-header{padding:18px 20px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;background:#f8fafc}
+.modal-body{padding:18px 20px;overflow:auto;display:grid;gap:14px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-size:12px;font-weight:700;color:#334155;text-transform:uppercase;letter-spacing:.05em}
+.field input,.field select,.field textarea{padding:11px 12px;border-radius:12px;border:1px solid #cbd5e1;font-size:14px;outline:none;background:#fff}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(15,111,180,.15)}
+.type-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.type-btn{border:1px solid var(--line);background:#fff;border-radius:14px;padding:10px 6px;text-align:center;cursor:pointer;font-size:12px;font-weight:700;display:flex;flex-direction:column;align-items:center;gap:6px}
+.type-btn i{font-size:18px}
+.type-btn.active{background:var(--text);color:#fff;border-color:var(--text)}
+.footer{padding:16px 20px;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:10px;background:#fff}
+.beyond{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.beyond-card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px;box-shadow:var(--shadow)}
+.beyond-card h4{font-size:13px;display:flex;gap:8px;align-items:center}
+.beyond-card p{font-size:12px;color:var(--muted);margin-top:6px}
+.kbd{font-size:11px;padding:3px 6px;border-radius:6px;background:#f1f5f9;border:1px solid #e2e8f0;border-bottom-width:2px}
+@media(max-width:1100px){.hero{grid-template-columns:1fr}.main{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}.type-grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:640px){.navbar{flex-wrap:wrap}.navlinks{order:3;width:100%;overflow:auto;white-space:nowrap}.hero h1{font-size:32px}.grid2,.grid3{grid-template-columns:1fr}.compare,.beyond{grid-template-columns:1fr}.segment{grid-template-columns:52px 1fr}.seg-actions{flex-direction:row;grid-column:1/-1;justify-content:flex-end}}
+</style>
+</head>
+<body>
+<div class="topbar">✨ <strong>New — TripIt Shine Pro:</strong> AI layover planner, lounge & queue time prediction + 1-click visa vault. <span>Try Pro free 30 days →</span></div>
+
+<nav class="navbar">
+  <div class="brand"><div class="brand-mark"><i class="fa-solid fa-plane"></i></div> TripIt Shine <span style="font-weight:500;color:var(--muted);font-size:13px;letter-spacing:.04em">TRAVEL</span></div>
+  <div class="navlinks">
+    <a class="active" href="#">Itinerary</a>
+    <a href="#plans">Plans</a>
+    <a href="#map">Map</a>
+    <a href="#docs">Documents</a>
+    <a href="#pro">TripIt Pro+ More</a>
+  </div>
+  <div class="nav-actions">
+    <button class="btn btn-ghost" onclick="document.getElementById('importModal').classList.add('open')"><i class="fa-solid fa-inbox"></i> Forward Email</button>
+    <button class="btn btn-blue" onclick="openModal()"><i class="fa-solid fa-plus"></i> Add Plan</button>
+    <img src="https://i.pravatar.cc/100?img=15" alt="avatar" style="width:36px;height:36px;border-radius:50%;border:2px solid var(--line)">
+  </div>
+</nav>
+
+<section class="hero">
+  <div>
+    <div style="display:inline-flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--line);padding:6px 10px;border-radius:999px;font-size:12px;font-weight:700"><span style="background:var(--blue);color:#fff;padding:2px 7px;border-radius:999px">EXACTLY LIKE TRIPIT</span> + way more options</div>
+    <h1>Organize travel <em>like TripIt</em>,<br>but supercharged for<br>real travelers.</h1>
+    <p>Forward booking emails, auto-builds a master itinerary. Now with <strong>airport waiting, lounge, immigration, baggage, layover games, packing weight, budget & currency</strong> — icons for every micro-moment TripIt misses.</p>
+    <div class="hero-badges">
+      <span class="badge"><i class="fa-solid fa-wand-magic-sparkles"></i> Auto-import Gmail/Outlook</span>
+      <span class="badge"><i class="fa-solid fa-tower-broadcast"></i> Real-time flight alerts</span>
+      <span class="badge"><i class="fa-solid fa-users"></i> Share & collaborate</span>
+      <span class="badge"><i class="fa-solid fa-print"></i> 1-tap print & PDF</span>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button class="btn btn-primary" onclick="openModal()"> <i class="fa-solid fa-plus"></i> Create New Trip</button>
+      <button class="btn btn-ghost" onclick="scrollToItinerary()"><i class="fa-solid fa-eye"></i> View Demo Itinerary</button>
+      <span style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)"><i class="fa-solid fa-shield-halved" style="color:var(--green)"></i> Offline-ready • Encrypted vault</span>
+    </div>
+    <div class="beyond" style="margin-top:16px">
+      <div class="beyond-card"><h4><i class="fa-solid fa-hourglass-half" style="color:var(--orange)"></i> Airport Waiting</h4><p>Track gate, queue time, boarding countdown — never miss a call.</p></div>
+      <div class="beyond-card"><h4><i class="fa-solid fa-couch" style="color:var(--blue)"></i> Lounge & Rest</h4><p>Lounge access, shower, nap pods, prayer room icons.</p></div>
+      <div class="beyond-card"><h4><i class="fa-solid fa-suitcase-rolling" style="color:var(--green)"></i> Baggage Live</h4><p>Carousel, weight, AirTag, delayed-bag workflow.</p></div>
+    </div>
+  </div>
+  <div class="hero-card">
+    <div class="hero-card-head">
+      <div><div style="font-weight:800;letter-spacing:.02em">MUM → VIE • 18–22 Aug 2026</div><div style="opacity:.9;font-size:12px">4 travelers • Auto-synced • 14 plans</div></div>
+      <div style="background:rgba(255,255,255,.2);padding:6px 10px;border-radius:999px;font-weight:800;font-size:12px"><i class="fa-solid fa-plane-departure"></i> ON TIME</div>
+    </div>
+    <div class="hero-card-body">
+      <div class="mini-timeline">
+        <div class="mini-item"><div class="mini-icon" style="background:var(--blue)"><i class="fa-solid fa-plane"></i></div><div><b style="font-size:13px">AI 465 Mumbai → Vienna</b><div style="font-size:12px;color:var(--muted)">02:15 — 06:45 • Austrian • Terminal 2</div></div><span style="margin-left:auto;font-size:11px;font-weight:800;color:var(--green)">✓ Confirmed</span></div>
+        <div class="mini-item"><div class="mini-icon" style="background:var(--orange)"><i class="fa-regular fa-hourglass-half"></i></div><div><b style="font-size:13px">Airport Wait & Immigration</b><div style="font-size:12px;color:var(--muted)">VIE • 45–90 min • Fast-track lane</div></div><span style="margin-left:auto;font-size:11px;background:#fff1ec;color:var(--orange-dark);padding:3px 7px;border-radius:999px;font-weight:800">Wait Icon</span></div>
+        <div class="mini-item"><div class="mini-icon" style="background:#8b5cf6"><i class="fa-solid fa-couch"></i></div><div><b style="font-size:13px">Lounge: Jet Lounge Vienna</b><div style="font-size:12px;color:var(--muted)">Shower • Quiet pod • 3h access</div></div></div>
+        <div class="mini-item"><div class="mini-icon" style="background:var(--green)"><i class="fa-solid fa-hotel"></i></div><div><b style="font-size:13px">Hotel — Anif, Salzburg</b><div style="font-size:12px;color:var(--muted)">Internat SHM • Check-in 15:00</div></div></div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:12px">
+        <button class="btn btn-blue" style="flex:1;justify-content:center" onclick="window.print()"><i class="fa-solid fa-file-pdf"></i> Export TripIt PDF</button>
+        <button class="btn btn-ghost" style="flex:1;justify-content:center" onclick="shareTrip()"><i class="fa-solid fa-share-nodes"></i> Share</button>
+      </div>
+      <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:8px">Drag & drop to reorder • Click card to edit • Icons for every step</div>
+    </div>
+  </div>
+</section>
+
+<div class="stats">
+  <div class="stat"><div><span>Days to go</span><b id="countdown">—</b></div><i class="fa-solid fa-calendar-check" style="color:var(--blue);font-size:22px"></i></div>
+  <div class="stat"><div><span>Total plans</span><b id="statPlans">0</b></div><i class="fa-solid fa-list-check" style="color:var(--orange);font-size:22px"></i></div>
+  <div class="stat"><div><span>Budget used</span><b id="statBudget">€0 / €0</b></div><i class="fa-solid fa-euro-sign" style="color:var(--green);font-size:22px"></i></div>
+  <div class="stat"><div><span>Packing done</span><b id="statPack">0%</b></div><i class="fa-solid fa-suitcase" style="color:#8b5cf6;font-size:22px"></i></div>
+</div>
+
+<div class="main" id="plans">
+  <!-- LEFT -->
+  <div style="display:flex;flex-direction:column;gap:16px">
+    <div class="card card-pad">
+      <div class="card-title">Your Trips <button class="btn btn-primary" style="padding:6px 10px;font-size:12px" onclick="createTrip()"><i class="fa-solid fa-plus"></i> New</button></div>
+      <div class="trip-list" id="tripList"></div>
+      <button class="btn btn-ghost" style="width:100%;margin-top:10px;justify-content:center" onclick="importDemo()"><i class="fa-solid fa-rotate"></i> Load TripIt Demo</button>
+    </div>
+
+    <div class="card card-pad" id="pro">
+      <div class="card-title">TripIt vs Shine <span class="pill">MORE OPTIONS</span></div>
+      <div class="compare">
+        <div class="compare-card"><b style="font-size:12px">Classic TripIt</b><div style="font-size:12px;margin-top:6px;line-height:1.6"><span class="cross">✕</span> Flight/Hotel/Car only<br><span class="cross">✕</span> No wait/lounge icons<br><span class="cross">✕</span> No baggage/queue<br><span class="cross">✕</span> No packing weight<br><span class="cross">✕</span> No layover planner</div></div>
+        <div class="compare-card pro"><b style="font-size:12px;color:var(--orange-dark)"><i class="fa-solid fa-crown"></i> Shine Pro</b><div style="font-size:12px;margin-top:6px;line-height:1.6"><span class="tick">✓</span> 20+ plan types<br><span class="tick">✓</span> Wait/Lounge/Prayer icons<br><span class="tick">✓</span> Live baggage & AirTag<br><span class="tick">✓</span> Smart packing + kg<br><span class="tick">✓</span> Layover city mini-guide</div></div>
+      </div>
+      <div style="margin-top:10px;background:#f8fafc;border:1px dashed var(--line);border-radius:12px;padding:10px;font-size:12px"><b>Icons TripIt doesn't have:</b> <span style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px">
+        <span class="meta"><i class="fa-regular fa-hourglass-half"></i> Waiting</span>
+        <span class="meta"><i class="fa-solid fa-couch"></i> Lounge</span>
+        <span class="meta"><i class="fa-solid fa-person-walking-luggage"></i> Queue</span>
+        <span class="meta"><i class="fa-solid fa-stamp"></i> Immigration</span>
+        <span class="meta"><i class="fa-solid fa-suitcase-rolling"></i> Baggage</span>
+        <span class="meta"><i class="fa-solid fa-weight-scale"></i> Weigh</span>
+        <span class="meta"><i class="fa-solid fa-mosque"></i> Prayer</span>
+        <span class="meta"><i class="fa-solid fa-shower"></i> Shower</span>
+        <span class="meta"><i class="fa-solid fa-bed"></i> Nap</span>
+        <span class="meta"><i class="fa-solid fa-wifi"></i> eSIM</span>
+      </span></div>
+    </div>
+
+    <div class="card card-pad">
+      <div class="card-title">Budget & Currency</div>
+      <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--muted)"><span>Spent</span><span id="budgetLabel">€0 of €2500</span></div>
+      <div class="progress" style="margin:8px 0"><div id="budgetBar" style="width:0%"></div></div>
+      <div class="grid2">
+        <div class="field"><label>Amount</label><input id="expAmount" type="number" placeholder="125"></div>
+        <div class="field"><label>Currency</label><select id="expCur"><option>EUR €</option><option>INR ₹</option><option>USD $</option><option>GBP £</option></select></div>
+      </div>
+      <button class="btn btn-blue" style="width:100%;margin-top:8px;justify-content:center" onclick="addExpense()"><i class="fa-solid fa-plus"></i> Add Expense</button>
+      <div id="expenseList" style="margin-top:10px;display:flex;flex-direction:column;gap:6px"></div>
+    </div>
+  </div>
+
+  <!-- CENTER TIMELINE -->
+  <div class="card card-pad" id="itinerary">
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:space-between">
+      <div>
+        <div style="font-weight:800;font-size:18px;display:flex;gap:10px;align-items:center"><span id="tripTitle">—</span> <span id="tripDates" class="pill"></span></div>
+        <div style="font-size:12px;color:var(--muted)" id="tripSubtitle">Select or create a trip</div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-ghost" onclick="exportICS()"><i class="fa-solid fa-calendar-plus"></i> Add to Calendar</button>
+        <button class="btn btn-primary" onclick="openModal()"><i class="fa-solid fa-plus"></i> Add Plan</button>
+      </div>
+    </div>
+
+    <div class="filters" style="margin:14px 0 10px">
+      <button class="filter active" data-filter="all" onclick="setFilter('all')"><i class="fa-solid fa-layer-group"></i> All</button>
+      <button class="filter" data-filter="flight" onclick="setFilter('flight')"><i class="fa-solid fa-plane"></i> Flights</button>
+      <button class="filter" data-filter="hotel" onclick="setFilter('hotel')"><i class="fa-solid fa-hotel"></i> Stay</button>
+      <button class="filter" data-filter="wait" onclick="setFilter('wait')"><i class="fa-regular fa-hourglass-half"></i> Waiting</button>
+      <button class="filter" data-filter="lounge" onclick="setFilter('lounge')"><i class="fa-solid fa-couch"></i> Lounge</button>
+      <button class="filter" data-filter="transport" onclick="setFilter('transport')"><i class="fa-solid fa-train"></i> Transit</button>
+      <button class="filter" data-filter="other" onclick="setFilter('other')"><i class="fa-solid fa-ellipsis"></i> More</button>
+    </div>
+
+    <div style="display:flex;gap:8px;margin-bottom:10px">
+      <div style="flex:1;position:relative"><i class="fa-solid fa-magnifying-glass" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#94a3b8"></i><input id="search" oninput="render()" placeholder="Search flight, hotel, confirmation, notes…" style="width:100%;padding:10px 12px 10px 32px;border-radius:12px;border:1px solid var(--line)"></div>
+      <select id="sort" onchange="render()" style="padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:#fff;font-weight:600"><option value="time">Sort: Time</option><option value="type">Sort: Type</option></select>
+    </div>
+
+    <div class="timeline" id="timeline"></div>
+    <div id="emptyState" style="text-align:center;padding:28px;border:1px dashed var(--line);border-radius:16px;color:var(--muted);display:none">
+      <div style="font-size:32px">🧳</div>
+      <b>No plans yet</b><div style="font-size:13px">Add your first flight, hotel, airport wait or lounge — just like TripIt, but with icons TripIt never had.</div>
+      <button class="btn btn-primary" style="margin-top:10px" onclick="openModal()">Add First Plan</button>
+    </div>
+  </div>
+
+  <!-- RIGHT -->
+  <div class="right-col">
+    <div class="card card-pad" id="map">
+      <div class="card-title">Map View <span style="font-size:11px;color:var(--muted);font-weight:600;text-transform:none;letter-spacing:0">Live • Offline maps</span></div>
+      <div class="map">
+        <div class="map-grid"></div>
+        <svg viewBox="0 0 300 160" style="position:absolute;inset:0;width:100%;height:100%">
+          <path d="M20 120 Q90 40 150 90 T280 40" fill="none" stroke="#0f6fb4" stroke-width="3" stroke-dasharray="8 6" opacity=".9"/>
+        </svg>
+        <div class="map-pin" style="left:18px;top:108px"><i class="fa-solid fa-plane-departure"></i></div>
+        <div class="map-pin" style="left:138px;top:78px;background:#0ea573"><i class="fa-solid fa-location-dot"></i></div>
+        <div class="map-pin" style="left:262px;top:28px;background:#8b5cf6"><i class="fa-solid fa-hotel"></i></div>
+        <div style="position:absolute;bottom:10px;left:10px;right:10px;background:#fff;border-radius:12px;padding:8px 10px;display:flex;justify-content:space-between;align-items:center;border:1px solid var(--line);font-size:12px"><span><b>BOM</b> → <b>VIE</b> → <b>SZG</b></span><span class="pill">1,842 km</span></div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <button class="btn btn-ghost" style="flex:1;justify-content:center" onclick="alert('Offline maps: download Austria & India packs in Pro.')"><i class="fa-solid fa-download"></i> Offline</button>
+        <button class="btn btn-ghost" style="flex:1;justify-content:center" onclick="shareTrip()"><i class="fa-solid fa-up-right-from-square"></i> Open in Maps</button>
+      </div>
+    </div>
+
+    <div class="card card-pad" id="docs">
+      <div class="card-title">Documents Vault <span class="pill">Encrypted</span></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div style="border:1px solid var(--line);border-radius:12px;padding:10px;text-align:center"><i class="fa-solid fa-passport" style="color:var(--blue)"></i><div style="font-size:12px;font-weight:700;margin-top:4px">Passport</div><div style="font-size:11px;color:var(--muted)">PDF • Auto OCR</div></div>
+        <div style="border:1px solid var(--line);border-radius:12px;padding:10px;text-align:center"><i class="fa-solid fa-file-shield" style="color:var(--green)"></i><div style="font-size:12px;font-weight:700;margin-top:4px">Visa / eTA</div><div style="font-size:11px;color:var(--muted)">Expiry alert</div></div>
+        <div style="border:1px solid var(--line);border-radius:12px;padding:10px;text-align:center"><i class="fa-solid fa-ticket" style="color:var(--orange)"></i><div style="font-size:12px;font-weight:700;margin-top:4px">Tickets</div><div style="font-size:11px;color:var(--muted)">PNR auto</div></div>
+        <div style="border:1px solid var(--line);border-radius:12px;padding:10px;text-align:center"><i class="fa-solid fa-shield-heart" style="color:#8b5cf6"></i><div style="font-size:12px;font-weight:700;margin-top:4px">Insurance</div><div style="font-size:11px;color:var(--muted)">Claim 1-tap</div></div>
+      </div>
+      <label class="btn btn-ghost" style="width:100%;margin-top:10px;justify-content:center;cursor:pointer"><i class="fa-solid fa-upload"></i> Upload Document <input type="file" hidden onchange="addDoc(this.files[0]?.name)"></label>
+      <div id="docList" style="margin-top:10px;display:flex;flex-direction:column;gap:6px"></div>
+    </div>
+
+    <div class="card card-pad">
+      <div class="card-title">Packing • Weight <span class="pill" id="packPill">0 / 0</span></div>
+      <div class="progress"><div id="packBar" style="width:0%"></div></div>
+      <div style="display:flex;gap:8px;margin:10px 0">
+        <input id="packInput" placeholder="Add item — e.g. Rosary, 23kg bag" style="flex:1;padding:10px 12px;border-radius:12px;border:1px solid var(--line)">
+        <button class="btn btn-blue" onclick="addPack()"><i class="fa-solid fa-plus"></i></button>
+      </div>
+      <div id="packList"></div>
+      <div style="font-size:11px;color:var(--muted);margin-top:8px;display:flex;gap:6px;align-items:center"><i class="fa-solid fa-weight-scale"></i> Airline: 23kg checked + 7kg cabin — Shine warns if over.</div>
+    </div>
+
+    <div class="card card-pad">
+      <div class="card-title">Neighbors & Layover Ideas <span class="pill">New vs TripIt</span></div>
+      <div style="display:flex;flex-direction:column;gap:8px;font-size:13px">
+        <div style="display:flex;gap:10px;align-items:center"><span style="width:32px;height:32px;border-radius:10px;background:#fff1ec;display:grid;place-items:center"><i class="fa-solid fa-mug-hot" style="color:var(--orange)"></i></span><div><b>3h layover in VIE?</b><div style="font-size:12px;color:var(--muted)">Historic centre 16 min by S7 • Lounge shower fast-track</div></div></div>
+        <div style="display:flex;gap:10px;align-items:center"><span style="width:32px;height:32px;border-radius:10px;background:#e0f0ff;display:grid;place-items:center"><i class="fa-solid fa-person-praying" style="color:var(--blue)"></i></span><div><b>Prayer / Quiet room</b><div style="font-size:12px;color:var(--muted)">VIE Terminal 1, Level 2 • 24h</div></div></div>
+        <div style="display:flex;gap:10px;align-items:center"><span style="width:32px;height:32px;border-radius:10px;background:#e6f9f0;display:grid;place-items:center"><i class="fa-solid fa-sim-card" style="color:var(--green)"></i></span><div><b>eSIM Austria</b><div style="font-size:12px;color:var(--muted)">5GB €9 • Activate on landing</div></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer style="max-width:1280px;margin:18px auto;padding:18px 24px;color:var(--muted);font-size:12px;display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;border-top:1px solid var(--line)">
+  <span>© 2026 TripIt Shine Travel — Inspired by TripIt.com, rebuilt with many more micro-icons & tools. Not affiliated with TripIt/ Concur.</span>
+  <span style="display:flex;gap:8px"><a href="#" onclick="exportJSON()">Export JSON</a> • <a href="#" onclick="window.print()">Print Itinerary</a> • <a href="#">Privacy</a></span>
+</footer>
+
+<!-- ADD PLAN MODAL -->
+<div class="modal-backdrop" id="planModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div><b id="modalTitle">Add Plan</b><div style="font-size:12px;color:var(--muted)">Exactly like TripIt — plus waiting, lounge, baggage, immigration icons</div></div>
+      <button class="icon-btn" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="type-grid" id="typeGrid"></div>
+      <div class="grid2">
+        <div class="field"><label>Title</label><input id="fTitle" placeholder="e.g. AI 465 Mumbai → Vienna"></div>
+        <div class="field"><label>Confirmation / PNR</label><input id="fConf" placeholder="e.g. 6E-ABC123"></div>
+      </div>
+      <div class="grid3">
+        <div class="field"><label>Date</label><input id="fDate" type="date"></div>
+        <div class="field"><label>Time</label><input id="fTime" type="time"></div>
+        <div class="field"><label>Duration / Wait</label><input id="fDur" placeholder="e.g. 7h 20m or 45 min wait"></div>
+      </div>
+      <div class="grid2">
+        <div class="field"><label>Location / Airport / Hotel</label><input id="fLoc" placeholder="e.g. BOM T2 → VIE T1"></div>
+        <div class="field"><label>Icon Note (shows as badge)</label><input id="fIconNote" placeholder="e.g. Fast-track, Shower, Carousel 4"></div>
+      </div>
+      <div class="field"><label>Details / Notes</label><textarea id="fNotes" rows="2" placeholder="Gate, seat, lounge access, baggage tag, prayer room, queue time…"></textarea></div>
+      <div class="grid2">
+        <div class="field"><label>Cost (€)</label><input id="fCost" type="number" placeholder="0"></div>
+        <div class="field"><label>Status</label><select id="fStatus"><option>Confirmed</option><option>Waitlisted</option><option>Cancelled</option><option>Check-in open</option></select></div>
+      </div>
+    </div>
+    <div class="footer">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel <span class="kbd">Esc</span></button>
+      <button class="btn btn-primary" onclick="savePlan()"><i class="fa-solid fa-floppy-disk"></i> Save Plan</button>
+    </div>
+  </div>
+</div>
+
+<!-- IMPORT MODAL -->
+<div class="modal-backdrop" id="importModal">
+  <div class="modal" style="width:min(560px,100%)">
+    <div class="modal-header"><b>Forward your bookings — like TripIt</b><button class="icon-btn" onclick="document.getElementById('importModal').classList.remove('open')"><i class="fa-solid fa-xmark"></i></button></div>
+    <div class="modal-body">
+      <div style="background:var(--blue-light);border:1px solid #bfdbfe;border-radius:12px;padding:12px;font-size:13px"><b>Your personal Shine address:</b><br><span style="font-family:monospace;background:#fff;padding:4px 8px;border-radius:8px;border:1px solid var(--line)">plans@shine.tripit-shine.travel</span> <button class="btn btn-ghost" style="padding:4px 8px;font-size:12px" onclick="navigator.clipboard.writeText('plans@shine.tripit-shine.travel');alert('Copied!')">Copy</button><div style="color:var(--muted);margin-top:6px">Forward any airline/hotel/car email — we parse PNR, time, terminal and create the icon-rich plan automatically. (Demo: click Auto-Import below)</div></div>
+      <button class="btn btn-blue" style="width:100%;justify-content:center" onclick="importDemo();document.getElementById('importModal').classList.remove('open')"><i class="fa-solid fa-wand-magic-sparkles"></i> Auto-Import Demo Trip (Mumbai → Vienna)</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const TYPES = [
+  {id:'flight', label:'Flight', icon:'fa-plane', color:'#0f6fb4'},
+  {id:'hotel', label:'Hotel', icon:'fa-hotel', color:'#0ea573'},
+  {id:'car', label:'Car', icon:'fa-car', color:'#334155'},
+  {id:'train', label:'Train', icon:'fa-train', color:'#0f6fb4'},
+  {id:'bus', label:'Bus', icon:'fa-bus', color:'#f59e0b'},
+  {id:'ferry', label:'Ferry', icon:'fa-ship', color:'#06b6d4'},
+  {id:'restaurant', label:'Restaurant', icon:'fa-utensils', color:'#ef4444'},
+  {id:'activity', label:'Activity', icon:'fa-ticket', color:'#8b5cf6'},
+  {id:'wait', label:'Airport Wait', icon:'fa-hourglass-half', color:'#ff6b35'},
+  {id:'lounge', label:'Lounge', icon:'fa-couch', color:'#8b5cf6'},
+  {id:'immigration', label:'Immigration', icon:'fa-stamp', color:'#0f6fb4'},
+  {id:'baggage', label:'Baggage', icon:'fa-suitcase-rolling', color:'#64748b'},
+  {id:'layover', label:'Layover', icon:'fa-stopwatch', color:'#ff6b35'},
+  {id:'transit', label:'Local Transit', icon:'fa-bus-simple', color:'#0ea573'},
+  {id:'meeting', label:'Meeting', icon:'fa-handshake', color:'#334155'},
+  {id:'health', label:'Health/Ins.', icon:'fa-shield-heart', color:'#ef4444'},
+  {id:'parking', label:'Parking', icon:'fa-square-parking', color:'#64748b'},
+  {id:'photo', label:'Photo Spot', icon:'fa-camera', color:'#ec4899'},
+  {id:'packing', label:'Packing', icon:'fa-box-open', color:'#a16207'},
+  {id:'other', label:'Other', icon:'fa-ellipsis', color:'#64748b'},
+];
+
+let trips = JSON.parse(localStorage.getItem('shine_trips')||'null') || [
+  {id:'t1', name:'Mumbai → Vienna → Salzburg', from:'2026-08-18', to:'2026-08-22', city:'Salzburg • Anif', budget:2500, travelers:4},
+  {id:'t2', name:'Vatican & Rome Pilgrimage', from:'2026-09-10', to:'2026-09-15', city:'Rome • Vatican', budget:1800, travelers:2},
+];
+let activeTripId = localStorage.getItem('shine_active') || 't1';
+let segments = JSON.parse(localStorage.getItem('shine_segments')||'null') || [
+  {id:'s1', tripId:'t1', type:'flight', title:'IndiGo 6E 5036 — BOM → VIE', conf:'6E5036', date:'2026-08-18', time:'02:15', dur:'7h 45m', loc:'BOM Terminal 2 → VIE Terminal 1', iconNote:'Gate A12 • Seat 18A', notes:'Overnight flight. eTicket synced. Meal included.', cost:520, status:'Confirmed'},
+  {id:'s2', tripId:'t1', type:'wait', title:'Airport Waiting & Security Queue', conf:'', date:'2026-08-18', time:'00:30', dur:'90 min wait', loc:'BOM T2 Domestic→Intl transfer', iconNote:'Queue ~25 min • Fast-track eligible', notes:'Keep passport, boarding pass, liquids bag ready. Prayer room near Gate 4.', cost:0, status:'Confirmed'},
+  {id:'s3', tripId:'t1', type:'immigration', title:'Immigration & Border Check', conf:'', date:'2026-08-18', time:'06:50', dur:'30–50 min', loc:'VIE Arrival Hall', iconNote:'EU lane • eGates', notes:'Have Meldezettel, admission letter, insurance. Officer may ask proof of accommodation.', cost:0, status:'Confirmed'},
+  {id:'s4', tripId:'t1', type:'baggage', title:'Baggage Claim & Customs', conf:'BAG 23kg', date:'2026-08-18', time:'07:15', dur:'20 min', loc:'VIE Carousel 4', iconNote:'Carousel 4 • Tag VIE8821', notes:'AirTag in checked bag. If delayed, file at VIE Lost & Found Counter B.', cost:0, status:'Confirmed'},
+  {id:'s5', tripId:'t1', type:'lounge', title:'Jet Lounge Vienna — Shower & Rest', conf:'PP-8842', date:'2026-08-18', time:'07:45', dur:'2h 30m', loc:'VIE Airside, Level 2', iconNote:'Shower • Nap pod • Wi-Fi', notes:'Priority Pass. Quiet zone. Use layover to refresh before train.', cost:32, status:'Confirmed'},
+  {id:'s6', tripId:'t1', type:'train', title:'Railjet RJ 546 — Vienna → Salzburg', conf:'RJ546-9B', date:'2026-08-18', time:'10:30', dur:'2h 22m', loc:'Wien Hbf → Salzburg Hbf', iconNote:'Platform 7 • Coach 24', notes:'Scenic ride. Validate ticket in ÖBB app. Free Wi-Fi.', cost:39, status:'Confirmed'},
+  {id:'s7', tripId:'t1', type:'transit', title:'Bus 25 — Salzburg Hbf → Anif', conf:'', date:'2026-08-18', time:'13:00', dur:'22 min', loc:'Salzburg Local', iconNote:'Every 15 min', notes:'Ask for Herz-Jesu Missionare stop. Contact: P. Senzel pickup if needed.', cost:3, status:'Confirmed'},
+  {id:'s8', tripId:'t1', type:'hotel', title:'Internat SHM — Boarding House', conf:'ANIF-260818', date:'2026-08-18', time:'15:00', dur:'4 nights', loc:'Dr.-Th.-Gugl-Weg 1, 5081 Anif', iconNote:'Check-in 15:00 • Curfew 22:00', notes:'Bring Meldezettel, passport copies. Room sharing. Laundry on site.', cost:0, status:'Confirmed'},
+  {id:'s9', tripId:'t1', type:'health', title:'Insurance & Health Vault Check', conf:'OEGK-2026', date:'2026-08-19', time:'09:00', dur:'15 min', loc:'School Office', iconNote:'e-card • Vaccination', notes:'Upload OeGK card, keep emergency numbers: 144 / 122.', cost:0, status:'Confirmed'},
+  {id:'s10', tripId:'t1', type:'activity', title:'Old Town & Mirabell — Photo Walk', conf:'', date:'2026-08-19', time:'16:00', dur:'2h', loc:'Salzburg Altstadt', iconNote:'Photo spot • Free', notes:'Perfect for arrival photos. Try Salzach riverside at golden hour.', cost:0, status:'Confirmed'},
+];
+let expenses = JSON.parse(localStorage.getItem('shine_expenses')||'null') || [{name:'Flight IndiGo', amount:520, cur:'EUR €'},{name:'Railjet', amount:39, cur:'EUR €'},{name:'Lounge', amount:32, cur:'EUR €'}];
+let packing = JSON.parse(localStorage.getItem('shine_pack')||'null') || [{text:'Passport + Visa + Admission letter (waterproof pouch)', done:true},{text:'23kg checked bag — AirTag inside', done:true},{text:'Rosary, small cross', done:false},{text:'Power adapter EU + India', done:true},{text:'Medicines + prescription', done:false},{text:'School uniform & formal shoes', done:false}];
+let docs = JSON.parse(localStorage.getItem('shine_docs')||'null') || [{name:'Passport_SKM.pdf', size:'959 KB'},{name:'School Admission Letter.pdf', size:'52 KB'},{name:'Meldezettel_SHINEIL.pdf', size:'325 KB'}];
+let filter = 'all';
+let selectedType = 'flight';
+let editingId = null;
+
+function save(){
+  localStorage.setItem('shine_trips', JSON.stringify(trips));
+  localStorage.setItem('shine_segments', JSON.stringify(segments));
+  localStorage.setItem('shine_expenses', JSON.stringify(expenses));
+  localStorage.setItem('shine_pack', JSON.stringify(packing));
+  localStorage.setItem('shine_docs', JSON.stringify(docs));
+  localStorage.setItem('shine_active', activeTripId);
+}
+
+function formatDate(d){ const dt=new Date(d); return dt.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}); }
+
+function renderTrips(){
+  const el=document.getElementById('tripList');
+  el.innerHTML = trips.map(t=>`
+    <div class="trip ${t.id===activeTripId?'active':''}" onclick="switchTrip('${t.id}')">
+      <h4>${t.name}</h4>
+      <small>${formatDate(t.from)} – ${formatDate(t.to)} • ${t.city}</small>
+      <div class="trip-meta">
+        <span class="chip blue">${segments.filter(s=>s.tripId===t.id).length} plans</span>
+        <span class="chip">${t.travelers} travelers</span>
+        <span class="chip green">€${t.budget}</span>
+      </div>
+    </div>
+  `).join('');
+  const tr = trips.find(x=>x.id===activeTripId);
+  document.getElementById('tripTitle').textContent = tr? tr.name : 'No trip';
+  document.getElementById('tripDates').textContent = tr? `${formatDate(tr.from)} → ${formatDate(tr.to)}` : '';
+  document.getElementById('tripSubtitle').textContent = tr? `${tr.city} • ${segments.filter(s=>s.tripId===tr.id).length} plans • Auto-import on` : '';
+  // countdown
+  if(tr){
+    const diff=Math.ceil((new Date(tr.from) - new Date())/86400000);
+    document.getElementById('countdown').textContent = diff>0? diff+' days' : diff===0? 'Today!' : Math.abs(diff)+' days ago';
+  }
+}
+
+function groupByDate(list){
+  const groups={};
+  list.forEach(s=>{ (groups[s.date]=groups[s.date]||[]).push(s); });
+  return Object.entries(groups).sort((a,b)=> a[0].localeCompare(b[0]));
+}
+
+function typeMeta(id){ return TYPES.find(t=>t.id===id) || TYPES[TYPES.length-1]; }
+
+function render(){
+  renderTrips();
+  const q=(document.getElementById('search').value||'').toLowerCase();
+  const sort=document.getElementById('sort').value;
+  let list = segments.filter(s=>s.tripId===activeTripId);
+  if(filter!=='all'){
+    if(filter==='transport') list=list.filter(s=>['train','bus','ferry','car','transit'].includes(s.type));
+    else if(filter==='other') list=list.filter(s=>!['flight','hotel','wait','lounge'].includes(s.type));
+    else list=list.filter(s=>s.type===filter);
+  }
+  if(q) list=list.filter(s=> (s.title+s.loc+s.notes+s.conf+s.iconNote).toLowerCase().includes(q));
+  if(sort==='time') list.sort((a,b)=> (a.date+a.time).localeCompare(b.date+b.time));
+  if(sort==='type') list.sort((a,b)=> a.type.localeCompare(b.type));
+
+  document.getElementById('statPlans').textContent = list.length;
+  const totalCost = expenses.reduce((a,b)=>a+b.amount,0);
+  const budget = trips.find(t=>t.id===activeTripId)?.budget||0;
+  document.getElementById('statBudget').textContent = `€${totalCost} / €${budget}`;
+  document.getElementById('budgetLabel').textContent = `€${totalCost} of €${budget}`;
+  document.getElementById('budgetBar').style.width = budget? Math.min(100, Math.round(totalCost/budget*100))+'%' : '0%';
+  const donePack = packing.filter(p=>p.done).length;
+  document.getElementById('statPack').textContent = packing.length? Math.round(donePack/packing.length*100)+'%' : '0%';
+  document.getElementById('packPill').textContent = `${donePack} / ${packing.length}`;
+  document.getElementById('packBar').style.width = packing.length? (donePack/packing.length*100)+'%' : '0%';
+
+  const tl=document.getElementById('timeline');
+  const empty=document.getElementById('emptyState');
+  if(list.length===0){ tl.innerHTML=''; empty.style.display='block'; return; }
+  empty.style.display='none';
+  const groups=groupByDate(list);
+  tl.innerHTML = groups.map(([date, items])=>{
+    const weather = ['☀️ 22° Sunny','🌤️ 19° Cloudy','🌧️ 16° Light rain','⛅ 24° Pleasant'][Math.floor(Math.random()*4)];
+    return `
+    <div class="day-group">
+      <div class="day-dot"></div>
+      <div class="day-header">
+        <span class="day-date"><i class="fa-regular fa-calendar"></i> ${formatDate(date)} • ${new Date(date).toLocaleDateString('en-GB',{weekday:'long'})}</span>
+        <span class="day-weather"><i class="fa-solid fa-cloud-sun"></i> ${weather}</span>
+        <span class="pill" style="margin-left:auto">${items.length} plans</span>
+      </div>
+      ${items.map(s=>{
+        const t=typeMeta(s.type);
+        return `<div class="segment">
+          <div class="seg-icon" style="background:${t.color}"><i class="fa-solid ${t.icon}"></i></div>
+          <div>
+            <div class="seg-title">${s.title} <span class="chip blue">${t.label.toUpperCase()}</span> ${s.status?`<span class="chip ${s.status==='Confirmed'?'green':''}">${s.status}</span>`:''}</div>
+            <div class="seg-sub"><i class="fa-regular fa-clock"></i> ${s.time} ${s.dur?'• '+s.dur:''} &nbsp; <i class="fa-solid fa-location-dot"></i> ${s.loc} ${s.conf?`&nbsp; <i class="fa-solid fa-ticket"></i> ${s.conf}`:''}</div>
+            ${s.iconNote?`<div class="meta" style="margin-top:6px;background:${t.color}15;color:${t.color};border-color:${t.color}30"><i class="fa-solid ${t.icon}"></i> ${s.iconNote}</div>`:''}
+            ${s.notes?`<div style="font-size:12px;color:#475569;margin-top:6px;background:#f8fafc;border:1px solid #f1f5f9;padding:8px 10px;border-radius:10px">${s.notes}</div>`:''}
+            <div class="seg-meta">
+              ${s.cost?`<span class="meta"><i class="fa-solid fa-euro-sign"></i> €${s.cost}</span>`:''}
+              <span class="meta"><i class="fa-solid fa-qrcode"></i> Check-in</span>
+              <span class="meta"><i class="fa-solid fa-share-nodes"></i> Share</span>
+            </div>
+          </div>
+          <div class="seg-actions">
+            <button class="icon-btn" title="Edit" onclick="editPlan('${s.id}')"><i class="fa-solid fa-pen"></i></button>
+            <button class="icon-btn" title="Duplicate" onclick="dupPlan('${s.id}')"><i class="fa-solid fa-copy"></i></button>
+            <button class="icon-btn" title="Delete" onclick="delPlan('${s.id}')"><i class="fa-solid fa-trash"></i></button>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`;
+  }).join('');
+
+  // expenses
+  document.getElementById('expenseList').innerHTML = expenses.map((e,i)=>`
+    <div style="display:flex;justify-content:space-between;align-items:center;background:#fff;border:1px solid var(--line);padding:8px 10px;border-radius:10px;font-size:13px">
+      <span><b>${e.name}</b> <span style="color:var(--muted)">• ${e.cur}</span></span>
+      <span style="display:flex;gap:8px;align-items:center"><b>€${e.amount}</b><button class="icon-btn" style="width:26px;height:26px" onclick="expenses.splice(${i},1);save();render()"><i class="fa-solid fa-xmark"></i></button></span>
+    </div>
+  `).join('') || '<div style="font-size:12px;color:var(--muted)">No expenses yet</div>';
+
+  // packing
+  document.getElementById('packList').innerHTML = packing.map((p,i)=>`
+    <label class="pack-item"><input type="checkbox" ${p.done?'checked':''} onchange="packing[${i}].done=this.checked;save();render()" style="width:18px;height:18px"> <span style="${p.done?'text-decoration:line-through;color:var(--muted)':''}">${p.text}</span><button class="icon-btn" style="width:26px;height:26px;margin-left:auto" onclick="packing.splice(${i},1);save();render()"><i class="fa-solid fa-trash"></i></button></label>
+  `).join('');
+
+  // docs
+  document.getElementById('docList').innerHTML = docs.map((d,i)=>`
+    <div style="display:flex;justify-content:space-between;align-items:center;background:#f8fafc;border:1px solid var(--line);padding:8px 10px;border-radius:10px;font-size:12px"><span><i class="fa-solid fa-file-pdf" style="color:var(--blue)"></i> ${d.name} <span style="color:var(--muted)">• ${d.size}</span></span><button class="icon-btn" style="width:26px;height:26px" onclick="docs.splice(${i},1);save();render()"><i class="fa-solid fa-xmark"></i></button></div>
+  `).join('');
+}
+
+function setFilter(f){
+  filter=f;
+  document.querySelectorAll('.filter').forEach(b=>b.classList.toggle('active', b.dataset.filter===f));
+  render();
+}
+
+function openModal(){
+  editingId=null;
+  document.getElementById('modalTitle').textContent='Add Plan';
+  document.getElementById('fTitle').value='';
+  document.getElementById('fConf').value='';
+  document.getElementById('fDate').value = new Date().toISOString().slice(0,10);
+  document.getElementById('fTime').value='09:00';
+  document.getElementById('fDur').value='';
+  document.getElementById('fLoc').value='';
+  document.getElementById('fIconNote').value='';
+  document.getElementById('fNotes').value='';
+  document.getElementById('fCost').value='';
+  document.getElementById('fStatus').value='Confirmed';
+  selectedType='flight';
+  renderTypeGrid();
+  document.getElementById('planModal').classList.add('open');
+}
+function closeModal(){ document.getElementById('planModal').classList.remove('open'); }
+function renderTypeGrid(){
+  document.getElementById('typeGrid').innerHTML = TYPES.map(t=>`
+    <button class="type-btn ${selectedType===t.id?'active':''}" onclick="selectedType='${t.id}';renderTypeGrid()">
+      <i class="fa-solid ${t.icon}"></i>${t.label}
+    </button>
+  `).join('');
+}
+function savePlan(){
+  const title=document.getElementById('fTitle').value.trim();
+  if(!title) return alert('Add a title');
+  const seg={
+    id: editingId || 's'+Date.now(),
+    tripId: activeTripId,
+    type: selectedType,
+    title, conf:document.getElementById('fConf').value.trim(),
+    date:document.getElementById('fDate').value, time:document.getElementById('fTime').value,
+    dur:document.getElementById('fDur').value.trim(), loc:document.getElementById('fLoc').value.trim(),
+    iconNote:document.getElementById('fIconNote').value.trim(), notes:document.getElementById('fNotes').value.trim(),
+    cost: Number(document.getElementById('fCost').value||0), status:document.getElementById('fStatus').value
+  };
+  if(editingId){
+    const idx=segments.findIndex(s=>s.id===editingId);
+    segments[idx]=seg;
+  } else segments.push(seg);
+  editingId=null; closeModal(); save(); render();
+}
+function editPlan(id){
+  const s=segments.find(x=>x.id===id); if(!s) return;
+  editingId=id; selectedType=s.type; renderTypeGrid();
+  document.getElementById('modalTitle').textContent='Edit Plan';
+  document.getElementById('fTitle').value=s.title;
+  document.getElementById('fConf').value=s.conf;
+  document.getElementById('fDate').value=s.date;
+  document.getElementById('fTime').value=s.time;
+  document.getElementById('fDur').value=s.dur;
+  document.getElementById('fLoc').value=s.loc;
+  document.getElementById('fIconNote').value=s.iconNote;
+  document.getElementById('fNotes').value=s.notes;
+  document.getElementById('fCost').value=s.cost;
+  document.getElementById('fStatus').value=s.status;
+  document.getElementById('planModal').classList.add('open');
+}
+function delPlan(id){ if(confirm('Delete this plan?')){ segments=segments.filter(s=>s.id!==id); save(); render(); } }
+function dupPlan(id){ const s=segments.find(x=>x.id===id); if(!s) return; segments.push({...s, id:'s'+Date.now(), title:s.title+' (copy)'}); save(); render(); }
+function switchTrip(id){ activeTripId=id; save(); render(); window.scrollTo({top:0, behavior:'smooth'}); }
+function createTrip(){
+  const name=prompt('Trip name? e.g. Mumbai → Vienna');
+  if(!name) return;
+  const from=prompt('Start date (YYYY-MM-DD)', new Date().toISOString().slice(0,10));
+  const to=prompt('End date (YYYY-MM-DD)', from);
+  const city=prompt('Main city / hotel?', 'Salzburg');
+  const t={id:'t'+Date.now(), name, from:from||new Date().toISOString().slice(0,10), to:to||from, city:city||'', budget:2000, travelers:1};
+  trips.push(t); activeTripId=t.id; save(); render();
+}
+function addExpense(){
+  const a=Number(document.getElementById('expAmount').value||0);
+  if(!a) return alert('Enter amount');
+  const cur=document.getElementById('expCur').value;
+  expenses.push({name:'Expense '+(expenses.length+1), amount:a, cur});
+  document.getElementById('expAmount').value=''; save(); render();
+}
+function addPack(){
+  const v=document.getElementById('packInput').value.trim();
+  if(!v) return;
+  packing.push({text:v, done:false}); document.getElementById('packInput').value=''; save(); render();
+}
+function addDoc(name){
+  if(!name) return;
+  docs.push({name, size:(Math.random()*900+50).toFixed(0)+' KB'}); save(); render();
+}
+function importDemo(){ // reset demo
+  if(!confirm('Load / reset the full Mumbai → Vienna demo with all new icons?')) return;
+  localStorage.clear(); location.reload();
+}
+function exportJSON(){
+  const data={trips, segments, expenses, packing, docs};
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='tripit-shine-travel.json'; a.click(); URL.revokeObjectURL(url);
+}
+function exportICS(){
+  let ics='BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//TripIt Shine//EN\r\n';
+  segments.filter(s=>s.tripId===activeTripId).forEach(s=>{
+    const dt = s.date.replace(/-/g,'')+'T'+s.time.replace(':','')+'00';
+    ics+=`BEGIN:VEVENT\r\nSUMMARY:${s.title}\r\nDTSTART:${dt}\r\nLOCATION:${s.loc}\r\nDESCRIPTION:${s.notes} ${s.conf}\r\nEND:VEVENT\r\n`;
+  });
+  ics+='END:VCALENDAR';
+  const blob=new Blob([ics],{type:'text/calendar'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='tripit-shine.ics'; a.click();
+}
+function shareTrip(){
+  const tr=trips.find(t=>t.id===activeTripId);
+  if(navigator.share){ navigator.share({title:tr.name, text:'My TripIt Shine itinerary', url:location.href}); }
+  else { navigator.clipboard.writeText(location.href); alert('Link copied — share your itinerary!'); }
+}
+function scrollToItinerary(){ document.getElementById('itinerary').scrollIntoView({behavior:'smooth'}); }
+
+// init
+renderTypeGrid();
+render();
+document.getElementById('fDate').valueAsDate=new Date();
+window.addEventListener('keydown', e=>{ if(e.key==='Escape'){ closeModal(); document.getElementById('importModal').classList.remove('open'); }});
+document.getElementById('planModal').addEventListener('click', e=>{ if(e.target===e.currentTarget) closeModal(); });
+document.getElementById('importModal').addEventListener('click', e=>{ if(e.target===e.currentTarget) e.currentTarget.classList.remove('open'); });
+</script>
+</body>
+</html>
