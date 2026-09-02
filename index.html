@@ -187,7 +187,7 @@ button{font-family:inherit}
   </div>
   <div class="nav-actions">
     <button class="btn btn-blue" onclick="openModal()" style="border-radius:999px;background:#fff;color:var(--blue);border:1px solid var(--line);box-shadow:none"><i class="fa-solid fa-plus" style="width:20px;height:20px;border-radius:50%;border:1px solid var(--blue);display:grid;place-items:center;font-size:11px"></i> Add a Plan</button>
-    <div id="userBox" style="display:flex;align-items:center;gap:8px"><img id="userAvatar" src="https://i.pravatar.cc/100?img=15" alt="avatar" style="width:30px;height:30px;border-radius:50%;border:2px solid var(--line)"><span id="userName" style="font-size:12px;font-weight:700;color:var(--muted);display:none">You</span></div>
+    <div id="userBox" style="display:flex;align-items:center;gap:6px"><img id="userAvatar" src="https://i.pravatar.cc/100?img=15" alt="avatar" style="width:30px;height:30px;border-radius:50%;border:2px solid var(--line)"><span id="userName" style="font-size:11px;font-weight:700;color:var(--muted)"></span><button id="logoutBtn" class="btn btn-ghost" style="display:none;padding:6px 10px;font-size:11px" onclick="googleLogout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</button></div>
   </div>
 </nav>
 
@@ -261,6 +261,7 @@ button{font-family:inherit}
         <button class="btn btn-ghost" onclick="shareTripLink()"><i class="fa-solid fa-share-nodes"></i> Share Trip</button>
         <button class="btn btn-ghost" onclick="addToGoogleCalendar()"><i class="fa-brands fa-google"></i> Add to Google Calendar</button>
         <button class="btn btn-ghost" onclick="exportICS()" title="Download .ics for any calendar"><i class="fa-solid fa-calendar-plus"></i> .ics</button>
+        <button class="btn btn-ghost" onclick="deleteTrip()" style="color:#ef4444;border-color:#fecaca"><i class="fa-solid fa-trash"></i> Delete Trip</button>
         <button class="btn btn-primary" onclick="openModal()"><i class="fa-solid fa-plus"></i> Add Plan</button>
       </div>
     </div>
@@ -583,8 +584,10 @@ function renderTrips(){
     if(hint) hint.style.display='none';
     el.innerHTML = trips.map(t=>`
       <div class="trip ${t.id===activeTripId?'active':''}" onclick="switchTrip('${t.id}')">
-        <h4>${t.name}</h4>
-        <small>${formatDate(t.from)} – ${formatDate(t.to)} • ${t.city}</small>
+        <div style="display:flex;gap:8px;align-items:start;justify-content:space-between">
+          <div style="flex:1;min-width:0"><h4>${t.name}</h4><small>${formatDate(t.from)} – ${formatDate(t.to)} • ${t.city}</small></div>
+          <button class="icon-btn" title="Delete trip entirely" onclick="event.stopPropagation(); deleteTripById('${t.id}')" style="width:26px;height:26px;color:#ef4444;border-color:#fecaca"><i class="fa-solid fa-trash" style="font-size:11px"></i></button>
+        </div>
         <div class="trip-meta">
           <span class="chip blue">${segments.filter(s=>s.tripId===t.id).length} plans</span>
           <span class="chip">${t.travelers} travelers</span>
@@ -604,6 +607,7 @@ function renderTrips(){
   } else {
     document.getElementById('countdown').textContent = '—';
   }
+  updateAuthUI();
 }
 
 function groupByDate(list){
@@ -765,6 +769,55 @@ function editPlan(id){
 function delPlan(id){ if(confirm('Delete this plan?')){ segments=segments.filter(s=>s.id!==id); save(); render(); } }
 function dupPlan(id){ const s=segments.find(x=>x.id===id); if(!s) return; segments.push({...s, id:'s'+Date.now(), title:s.title+' (copy)'}); save(); render(); }
 function switchTrip(id){ activeTripId=id; save(); render(); window.scrollTo({top:0, behavior:'smooth'}); }
+function deleteTrip(){
+  if(!activeTripId) return alert('No trip to delete');
+  deleteTripById(activeTripId);
+}
+function deleteTripById(id){
+  const tr=trips.find(t=>t.id===id);
+  if(!tr) return;
+  const count=segments.filter(s=>s.tripId===id).length;
+  if(!confirm(`Delete trip entirely?\n\n"${tr.name}" and all its ${count} plans will be removed.\nThis cannot be undone.`)) return;
+  trips=trips.filter(t=>t.id!==id);
+  segments=segments.filter(s=>s.tripId!==id);
+  if(activeTripId===id) activeTripId=trips[0]?.id||null;
+  save(); render();
+}
+function googleLogout(){
+  if(!confirm('Logout of Google account? This will clear sign-in on this device.')) return;
+  try{
+    if(window.google && google.accounts && google.accounts.id){
+      google.accounts.id.disableAutoSelect();
+      // revoke token if we have one
+      const tok=localStorage.getItem('shine_google_access_token');
+      if(tok) fetch(`https://oauth2.googleapis.com/revoke?token=${tok}`, {method:'POST'}).catch(()=>{});
+    }
+  }catch(e){}
+  localStorage.removeItem('shine_google_user');
+  localStorage.removeItem('shine_google_access_token');
+  localStorage.removeItem('shine_gmaps_key');
+  _googleUser=null; _googleToken=null;
+  document.getElementById('userName').textContent='';
+  document.getElementById('userAvatar').src='https://i.pravatar.cc/100?img=15';
+  document.getElementById('logoutBtn').style.display='none';
+  document.getElementById('googleStatus') && (document.getElementById('googleStatus').textContent='Logged out');
+  alert('Logged out of Google on this device');
+  render();
+}
+function updateAuthUI(){
+  const u=JSON.parse(localStorage.getItem('shine_google_user')||'null');
+  const btn=document.getElementById('logoutBtn');
+  const nameEl=document.getElementById('userName');
+  const av=document.getElementById('userAvatar');
+  if(u && u.email){
+    if(nameEl) nameEl.textContent=u.name||u.email;
+    if(av && u.picture) av.src=u.picture;
+    if(btn) btn.style.display='inline-flex';
+  } else {
+    if(nameEl) nameEl.textContent='';
+    if(btn) btn.style.display='none';
+  }
+}
 function createTrip(){
   const name=prompt('Trip name? e.g. Mumbai → Vienna');
   if(!name) return;
@@ -1121,9 +1174,8 @@ function handleGoogleCredential(resp){
     _googleUser = payload;
     _googleToken = resp.credential;
     localStorage.setItem('shine_google_user', JSON.stringify(payload));
-    document.getElementById('userName').textContent = payload.name || payload.email || 'You';
-    if(payload.picture) document.getElementById('userAvatar').src = payload.picture;
     document.getElementById('googleStatus').textContent = 'Signed in as '+payload.email+' — click Fetch trips now';
+    updateAuthUI();
     // Try to fetch via GIS token flow if available
     googleFetchTrips();
   }catch(e){ document.getElementById('googleStatus').textContent='Sign-in error'; }
@@ -1439,12 +1491,7 @@ if(!localStorage.getItem('shine_gmaps_key')){
 // auto-init google button when library loads
 window.addEventListener('load', ()=>{
   setTimeout(renderGoogleButton, 800);
-  // restore Google user
-  const u=JSON.parse(localStorage.getItem('shine_google_user')||'null');
-  if(u){
-    document.getElementById('userName').textContent=u.name||u.email||'You';
-    if(u.picture) document.getElementById('userAvatar').src=u.picture;
-  }
+  updateAuthUI();
   document.getElementById('tripitImportModal').addEventListener('click', e=>{ if(e.target===e.currentTarget) e.currentTarget.classList.remove('open'); });
 });
 </script>
