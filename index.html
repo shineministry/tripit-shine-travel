@@ -191,16 +191,25 @@ button{font-family:inherit}
 #itinerary .timeline.glow .seg-time{border-right-color:#0f6fb4}
 #itinerary .seg-time b{font-size:13px; color:#0f172a}
 #itinerary .seg-icons{display:flex;flex-direction:column;align-items:center;justify-content:space-between;width:60px;padding:6px 0;position:relative; margin-left:-30px; margin-right:-30px; z-index:1}
-#itinerary .seg-icon{width:40px;height:40px; border-radius:50%; border:3px solid #fff; box-shadow:0 0 0 2px #cbd5e1; font-size:15px; flex-shrink:0; display:grid;place-items:center; transition:all .4s; position:relative; color:#fff; background:#94a3b8 !important}
-#itinerary .seg-line{width:2px; flex:1; min-height:18px; background:#cbd5e1; margin:4px 0; transition:all .4s}
+#itinerary .seg-icon{width:38px;height:38px; border-radius:50%; border:3px solid #fff; box-shadow:0 0 0 2px #cbd5e1; font-size:14px; flex-shrink:0; display:grid;place-items:center; transition:all .4s; position:relative; color:#fff; background:#94a3b8 !important}
+#itinerary .seg-icon.middle{width:32px;height:32px; font-size:12px; border-width:2px}
+#itinerary .seg-line{width:2px; flex:1; min-height:14px; background:#cbd5e1; margin:3px 0; transition:all .4s}
 #itinerary .timeline.glow .seg-line{background:#cbd5e1}
-#itinerary .segment.glow .seg-icon{background:#0f6fb4 !important; border:3px solid #fff; box-shadow:0 0 0 2px #0f6fb4, 0 0 10px rgba(15,111,180,.55) !important; animation:iconGlow 1.6s ease-in-out infinite}
-#itinerary .segment.glow .seg-line{background:#0f6fb4 !important; box-shadow:0 0 6px rgba(15,111,180,.45); animation:lineGlow 1.6s ease-in-out infinite}
+#itinerary .segment.glow .seg-icon{animation:none}
+#itinerary .segment.glow-top .seg-icon.top{background:#0f6fb4 !important; border:3px solid #fff; box-shadow:0 0 0 2px #0f6fb4, 0 0 12px rgba(15,111,180,.70) !important; animation:iconGlow 1.2s ease-in-out infinite}
+#itinerary .segment.glow-bottom .seg-icon.bottom{background:#0f6fb4 !important; border:3px solid #fff; box-shadow:0 0 0 2px #0f6fb4, 0 0 12px rgba(15,111,180,.70) !important; animation:iconGlow 1.2s ease-in-out infinite}
+#itinerary .segment.glow-middle .seg-icon.middle{background:#0f6fb4 !important; border:2px solid #fff; box-shadow:0 0 0 2px #0f6fb4, 0 0 12px rgba(15,111,180,.70) !important; animation:iconGlow 1.2s ease-in-out infinite}
+#itinerary .segment.glow-middle .seg-icon.top, #itinerary .segment.glow-middle .seg-icon.bottom{background:#f59e0b !important; border:2px solid #fff; box-shadow:0 0 0 2px #f59e0b, 0 0 10px rgba(245,158,11,.55) !important; animation:iconGlowYellow 1.4s ease-in-out infinite}
+#itinerary .segment.glow-middle .seg-line{background:#0f6fb4 !important; animation:lineGlow 1.4s ease-in-out infinite}
 #itinerary .segment.glow{border-left:3px solid #0f6fb4; background:#f0f7ff !important}
-#itinerary .segment.idle .seg-icon{animation:none; box-shadow:0 0 0 2px #cbd5e1 !important}
+#itinerary .segment.idle .seg-icon{animation:none; box-shadow:0 0 0 2px #cbd5e1 !important; background:#94a3b8 !important}
+#itinerary .segment.near-from .seg-icon.middle, #itinerary .segment.near-to .seg-icon.middle{display:none}
+#itinerary .plan-separator{height:4px; background:#e2e8f0; margin:6px 0 6px 84px; border-radius:999px}
+#itinerary .plan-separator.active{background:#0f6fb4; box-shadow:0 0 8px rgba(15,111,180,.40)}
 #itinerary .segment > div:nth-child(3){padding:10px 12px}
 @keyframes timelineGlow{0%{box-shadow:0 0 0 4px rgba(15,111,180,.15), 0 0 12px rgba(15,111,180,.45)}100%{box-shadow:0 0 0 7px rgba(15,111,180,.22), 0 0 20px rgba(15,111,180,.7)}}
-@keyframes iconGlow{0%{box-shadow:0 0 0 2px #0f6fb4, 0 0 8px rgba(15,111,180,.45), 0 0 14px rgba(15,111,180,.25)}50%{box-shadow:0 0 0 2px #0f6fb4, 0 0 14px rgba(15,111,180,.75), 0 0 22px rgba(15,111,180,.40)}100%{box-shadow:0 0 0 2px #0f6fb4, 0 0 8px rgba(15,111,180,.45), 0 0 14px rgba(15,111,180,.25)}}
+@keyframes iconGlow{0%{transform:scale(1); box-shadow:0 0 0 2px #0f6fb4, 0 0 8px rgba(15,111,180,.55), 0 0 16px rgba(15,111,180,.35)}50%{transform:scale(1.08); box-shadow:0 0 0 2px #0f6fb4, 0 0 16px rgba(15,111,180,.85), 0 0 28px rgba(15,111,180,.55)}100%{transform:scale(1); box-shadow:0 0 0 2px #0f6fb4, 0 0 8px rgba(15,111,180,.55), 0 0 16px rgba(15,111,180,.35)}}
+@keyframes iconGlowYellow{0%{transform:scale(1); box-shadow:0 0 0 2px #f59e0b, 0 0 8px rgba(245,158,11,.50)}50%{transform:scale(1.06); box-shadow:0 0 0 2px #f59e0b, 0 0 14px rgba(245,158,11,.80), 0 0 22px rgba(245,158,11,.40)}100%{transform:scale(1); box-shadow:0 0 0 2px #f59e0b, 0 0 8px rgba(245,158,11,.50)}}
 @keyframes lineGlow{0%{box-shadow:0 0 4px rgba(15,111,180,.30)}50%{box-shadow:0 0 8px rgba(15,111,180,.60)}100%{box-shadow:0 0 4px rgba(15,111,180,.30)}}
 @media(max-width:1100px){.main{grid-template-columns:1fr !important}.stats{grid-template-columns:repeat(2,1fr)}.type-grid{grid-template-columns:repeat(2,1fr) !important}}
 @media(max-width:640px){.navbar{flex-wrap:wrap}.navlinks{order:3;width:100%;overflow:auto;white-space:nowrap}.hero h1{font-size:32px}.grid2,.grid3{grid-template-columns:1fr}.compare,.beyond{grid-template-columns:1fr}.segment{grid-template-columns:52px 1fr}.seg-actions{flex-direction:row;grid-column:1/-1;justify-content:flex-end}}
@@ -927,18 +936,49 @@ function render(){
         <span class="day-date">${dow}, ${formatDate(date)}</span>
         <span class="day-weather" style="margin-left:auto;font-size:11px;color:#64748b">Vienna, Austria: ${weather}</span>
       </div>
-      ${items.map(s=>{
+      ${items.map((s, idx)=>{
         const t=typeMeta(s.type);
-        const time12 = formatTime12(s.time);
-        const isActive = s.id===activeSegId;
-        const segClass = isActive ? 'segment glow' : 'segment idle';
-        // two icons per plan — one on top, one on bottom, only ONE plan glows for precise location
+        // get start/end for FROM/TO times (for top/bottom icons)
+        let sDate=s.date, sTime=s.time, eDate=s.date, eTime=s.time;
+        if(s.extraData){
+          if(s.type==='car'){ sDate=s.extraData.fPickupDate||s.date; sTime=s.extraData.fPickupTime||s.time; eDate=s.extraData.fDropoffDate||sDate; eTime=s.extraData.fDropoffTime||sTime; }
+          else if(s.type==='flight'){ sDate=s.extraData.fDepDate||s.date; sTime=s.extraData.fDepTime||s.time; eDate=s.extraData.fArrDate||sDate; eTime=s.extraData.fArrTime||sTime; }
+          else if(s.type==='hotel'){ sDate=s.extraData.fCheckinDate||s.date; sTime=s.extraData.fCheckinTime||s.time; eDate=s.extraData.fCheckoutDate||sDate; eTime=s.extraData.fCheckoutTime||sTime; }
+        }
+        const start12=formatTime12(sTime), end12=formatTime12(eTime);
+        const durDisp = s.dur || (sDate!==eDate || sTime!==eTime ? '30 min' : '');
+        // per-plan precise location: near FROM, middle, near TO, with 5min ended buffer and thick line
+        let segState='idle';
+        const now=new Date();
+        const startDt=new Date(sDate+'T'+(sTime||'00:00'));
+        const endDt=new Date(eDate+'T'+(eTime||'00:00'));
+        const nearWin=30*60*1000, endedBuf=5*60*1000;
+        if(!isNaN(startDt) && !isNaN(endDt)){
+          if(now < new Date(startDt.getTime() - nearWin)) segState='idle';
+          else if(now > new Date(endDt.getTime() + endedBuf)) segState='idle';
+          else if(Math.abs(now - startDt) <= nearWin) segState='near-from';
+          else if(Math.abs(now - endDt) <= nearWin) segState='near-to';
+          else if(now > new Date(startDt.getTime()+nearWin) && now < new Date(endDt.getTime()-nearWin)) segState='glow-middle';
+          else if(now >= startDt && now <= endDt) segState='glow-middle';
+          else segState='idle';
+        }
+        if(timelineState==='idle') segState='idle';
+        let segClass='segment idle';
+        if(segState==='near-from') segClass='segment glow-top';
+        else if(segState==='near-to') segClass='segment glow-bottom';
+        else if(segState==='glow-middle') segClass='segment glow-middle';
         return `<div class="${segClass}">
-          <div class="seg-time"><b>${time12.hm}</b><span>${time12.ap} <br>GMT+5:30</span>${s.dur?`<span style="margin-top:4px;font-size:10px;color:#94a3b8">${s.dur}</span>`:''}</div>
+          <div class="seg-time" style="display:flex;flex-direction:column;justify-content:space-between;gap:4px;padding:8px 10px 8px 6px">
+            <div style="text-align:right"><b>${start12.hm}</b><span style="font-size:10px"> ${start12.ap}<br>GMT+5:30</span></div>
+            <div style="font-size:9px;color:#64748b;text-align:right">${durDisp}</div>
+            <div style="text-align:right"><b>${end12.hm}</b><span style="font-size:10px"> ${end12.ap}<br>GMT+5:30</span></div>
+          </div>
           <div class="seg-icons">
-            <div class="seg-icon" style="background:${isActive? t.color : '#94a3b8'}"><i class="fa-solid ${t.icon}"></i></div>
+            <div class="seg-icon top" style="background:${segState==='near-from' || segState==='glow-middle' ? t.color : '#94a3b8'}"><i class="fa-solid ${t.icon}"></i></div>
             <div class="seg-line"></div>
-            <div class="seg-icon" style="background:${isActive? t.color : '#94a3b8'}"><i class="fa-solid ${t.icon}"></i></div>
+            <div class="seg-icon middle" style="background:${segState==='glow-middle' ? t.color : '#94a3b8'}; ${segState==='near-from' || segState==='near-to' ? 'display:none' : ''}"><i class="fa-solid ${t.icon}"></i></div>
+            <div class="seg-line" style="${segState==='near-from' || segState==='near-to' ? 'display:none' : ''}"></div>
+            <div class="seg-icon bottom" style="background:${segState==='near-to' || segState==='glow-middle' ? t.color : '#94a3b8'}"><i class="fa-solid ${t.icon}"></i></div>
           </div>
           <div>
             <div class="seg-title" style="color:#0f6fb4">${s.title} ${s.type==='wait'?`<span style="font-size:10px;background:#fff1ec;color:#ff6b35;padding:2px 6px;border-radius:999px;border:1px solid #ffddd0">Airport Wait</span>`:''}</div>
@@ -952,7 +992,7 @@ function render(){
             <button class="icon-btn" title="Edit" onclick="editPlan('${s.id}')" style="width:28px;height:28px"><i class="fa-solid fa-pen" style="font-size:11px"></i></button>
             <button class="icon-btn" title="Delete" onclick="delPlan('${s.id}')" style="width:28px;height:28px"><i class="fa-solid fa-trash" style="font-size:11px"></i></button>
           </div>
-        </div>`;
+        </div>${idx < items.length-1 ? `<div class="plan-separator ${segState!=='idle'?'active':''}"></div>` : ''}`;
       }).join('')}
     </div>`;
   }).join('');
@@ -1146,46 +1186,8 @@ function savePlan(){
   if(notesVal){
     extraHtml += `<div style="display:flex;gap:8px;padding:3px 0;font-size:12px"><span style="font-weight:700;min-width:170px">Notes:</span><span style="color:#334155;white-space:pre-line">${notesVal.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</span></div>`;
   }
-  // Two-icon handling — like TripIt: every plan with start+end gets two timeline dots (Pick Up/Drop Off, Depart/Arrive, Check In/Out, etc.)
-  if(!editingId){
-    const twoMap={
-      car: {sDate:'fPickupDate', sTime:'fPickupTime', sLoc:'fPickupLoc', eDate:'fDropoffDate', eTime:'fDropoffTime', eLoc:'fDropoffLoc', sAltLoc:'fPickupAddr', eAltLoc:'fDropoffAddr', sLabel:'Pick Up', eLabel:'Drop Off'},
-      flight: {sDate:'fDepDate', sTime:'fDepTime', sLoc:'fDepAir', eDate:'fArrDate', eTime:'fArrTime', eLoc:'fArrAir', sLabel:'Depart', eLabel:'Arrive'},
-      hotel: {sDate:'fCheckinDate', sTime:'fCheckinTime', sLoc:'fHotelAddr', eDate:'fCheckoutDate', eTime:'fCheckoutTime', eLoc:'fHotelAddr', sLabel:'Check In', eLabel:'Check Out'},
-      rail: {sDate:'fDepDate', sTime:'fDepTime', sLoc:'fDepAir', eDate:'fArrDate', eTime:'fArrTime', eLoc:'fArrAir', sLabel:'Depart', eLabel:'Arrive'},
-      cruise: {sDate:'fDepDate', sTime:'fDepTime', sLoc:'fDepAir', eDate:'fArrDate', eTime:'fArrTime', eLoc:'fArrAir', sLabel:'Depart', eLabel:'Arrive'},
-      ferry: {sDate:'fDepDate', sTime:'fDepTime', sLoc:'fDepAir', eDate:'fArrDate', eTime:'fArrTime', eLoc:'fArrAir', sLabel:'Depart', eLabel:'Arrive'},
-      transportation: {sDate:'fPickupDate', sTime:'fPickupTime', sLoc:'fPickupLoc', eDate:'fDropoffDate', eTime:'fDropoffTime', eLoc:'fDropoffLoc', sLabel:'Pick Up', eLabel:'Drop Off'},
-    };
-    const cfg2 = twoMap[selectedType];
-    if(cfg2){
-      const sDate = extraData[cfg2.sDate] || document.getElementById('fDate').value;
-      const sTime = extraData[cfg2.sTime] || document.getElementById('fTime').value || '09:00';
-      const eDate = extraData[cfg2.eDate] || sDate;
-      const eTime = extraData[cfg2.eTime] || '10:00';
-      let sLoc = extraData[cfg2.sLoc] || (cfg2.sAltLoc? extraData[cfg2.sAltLoc]:'') || document.getElementById('fLoc').value.trim() || '';
-      let eLoc = extraData[cfg2.eLoc] || (cfg2.eAltLoc? extraData[cfg2.eAltLoc]:'') || sLoc;
-      if(selectedType==='car' && extraData.fSamePickup) eLoc = sLoc;
-      // create two if dates/times/locs differ or even if same (always two for these types, like TripIt)
-      if(sDate && eDate){
-        const base = {type:selectedType, title, conf:document.getElementById('fConf').value.trim(), dur:document.getElementById('fDur').value.trim(), iconNote:document.getElementById('fIconNote').value.trim(), notes: notesVal, detailsHtml: extraHtml || null, extraData, cost: Number(document.getElementById('fCost').value||0), status:document.getElementById('fStatus').value};
-        const seg1={id:'s'+Date.now(), tripId:activeTripId, ...base, title: title, date: sDate, time: sTime, loc: sLoc, subType: cfg2.sLabel.toLowerCase().replace(' ','')};
-        const seg2={id:'s'+(Date.now()+1), tripId:activeTripId, ...base, title: title, date: eDate, time: eTime, loc: eLoc, subType: cfg2.eLabel.toLowerCase().replace(' ','')};
-        seg1.subLabel=cfg2.sLabel; seg2.subLabel=cfg2.eLabel;
-        seg1.detailsHtml = `<div style="font-weight:700;color:#0f6fb4;font-size:11px;margin-bottom:4px">${cfg2.sLabel}</div>` + (extraHtml||'');
-        seg2.detailsHtml = `<div style="font-weight:700;color:#0f6fb4;font-size:11px;margin-bottom:4px">${cfg2.eLabel}</div>` + (extraHtml||'');
-        segments.push(seg1, seg2);
-        editingId=null; closeModal(); save(); render();
-        return;
-      }
-    }
-    // generic fallback: if any type has two distinct dates in extraData (like generic), also split if both present
-    const genStart = extraData.fGenDate || extraData.fCheckinDate || extraData.fDepDate || extraData.fPickupDate;
-    const genEnd = extraData.fGenDate ? null : (extraData.fCheckoutDate || extraData.fArrDate || extraData.fDropoffDate);
-    if(genStart && genEnd && genStart!==genEnd){
-      // treat as two — not needed for single-date generic types
-    }
-  }
+  // (kept single segment per plan — two icons + middle icon per plan handle start/end via extraData, not two segments)
+  // No split — every plan is one segment with up to 3 icons (top/middle/bottom) for precise location
   const seg={
     id: editingId || 's'+Date.now(),
     tripId: activeTripId,
