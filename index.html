@@ -164,15 +164,21 @@ button{font-family:inherit}
 .type-btn.active i{background:#fff !important;color:var(--blue) !important}
 /* TripIt 100% exact timeline */
 #itinerary .timeline{position:relative;padding-left:0}
-#itinerary .timeline:before{left:84px; width:2px; background:#0f6fb4; top:8px; bottom:8px}
+#itinerary .timeline:before{left:84px; width:2px; background:#cbd5e1; top:8px; bottom:8px; transition:all .4s ease}
+#itinerary .timeline.glow:before{background:#0f6fb4; box-shadow:0 0 0 4px rgba(15,111,180,.15), 0 0 14px rgba(15,111,180,.55); animation:timelineGlow 2s ease-in-out infinite alternate}
+#itinerary .timeline.idle:before{background:#cbd5e1; box-shadow:none; animation:none}
 #itinerary .day-header{background:#f8fafc; border:1px solid #e2e8f0; border-left:4px solid #0f6fb4; padding:8px 12px 8px 14px; margin:12px 0 0 0; border-radius:0; position:sticky; top:56px; z-index:2}
 #itinerary .day-dot{display:none}
 #itinerary .day-date{background:transparent; border:none; padding:0; font-weight:800; font-size:13px; color:#0f172a}
 #itinerary .segment{margin-left:0; background:#fff; border:none; border-bottom:1px solid #eef2f7; border-radius:0; box-shadow:none; padding:0; grid-template-columns:84px 60px 1fr auto; gap:0; align-items:stretch; min-height:64px}
-#itinerary .seg-time{width:84px; text-align:right; padding:10px 10px 10px 6px; font-size:11px; line-height:1.25; color:#334155; border-right:2px solid #0f6fb4; display:flex; flex-direction:column; justify-content:center; align-items:flex-end; background:#fff}
+#itinerary .seg-time{width:84px; text-align:right; padding:10px 10px 10px 6px; font-size:11px; line-height:1.25; color:#334155; border-right:2px solid #cbd5e1; display:flex; flex-direction:column; justify-content:center; align-items:flex-end; background:#fff; transition:all .4s}
+#itinerary .timeline.glow .seg-time{border-right-color:#0f6fb4}
 #itinerary .seg-time b{font-size:13px; color:#0f172a}
-#itinerary .seg-icon{width:44px;height:44px; margin:10px 8px; border-radius:50%; border:3px solid #fff; box-shadow:0 0 0 2px #0f6fb4; font-size:16px; flex-shrink:0; align-self:center}
+#itinerary .seg-icon{width:44px;height:44px; margin:10px 8px; border-radius:50%; border:3px solid #fff; box-shadow:0 0 0 2px #cbd5e1; font-size:16px; flex-shrink:0; align-self:center; transition:all .4s}
+#itinerary .timeline.glow .seg-icon{box-shadow:0 0 0 2px #0f6fb4, 0 0 10px rgba(15,111,180,.6)}
+#itinerary .timeline.idle .seg-icon{background:#94a3b8 !important}
 #itinerary .segment > div:nth-child(3){padding:10px 12px}
+@keyframes timelineGlow{0%{box-shadow:0 0 0 4px rgba(15,111,180,.15), 0 0 12px rgba(15,111,180,.45)}100%{box-shadow:0 0 0 7px rgba(15,111,180,.22), 0 0 20px rgba(15,111,180,.7)}}
 @media(max-width:1100px){.main{grid-template-columns:1fr !important}.stats{grid-template-columns:repeat(2,1fr)}.type-grid{grid-template-columns:repeat(2,1fr) !important}}
 @media(max-width:640px){.navbar{flex-wrap:wrap}.navlinks{order:3;width:100%;overflow:auto;white-space:nowrap}.hero h1{font-size:32px}.grid2,.grid3{grid-template-columns:1fr}.compare,.beyond{grid-template-columns:1fr}.segment{grid-template-columns:52px 1fr}.seg-actions{flex-direction:row;grid-column:1/-1;justify-content:flex-end}}
 </style>
@@ -665,6 +671,20 @@ function render(){
 
   const tl=document.getElementById('timeline');
   const empty=document.getElementById('emptyState');
+  // glowing timeline logic — exactly like TripIt: glows only when trip is active (in-progress)
+  const activeTrip = trips.find(t=>t.id===activeTripId);
+  let timelineState='idle'; // idle = non-glowing gray
+  if(activeTrip){
+    const today = new Date(); today.setHours(0,0,0,0);
+    const from = new Date(activeTrip.from); from.setHours(0,0,0,0);
+    const to = new Date(activeTrip.to); to.setHours(0,0,0,0);
+    if(today >= from && today <= to) timelineState='glow';
+    else timelineState='idle';
+  }
+  tl.classList.remove('glow','idle');
+  tl.classList.add(timelineState);
+  if(activeTrip && timelineState==='glow') tl.title='Trip in progress — timeline glowing';
+  else if(activeTrip) tl.title='Trip not active — timeline idle';
   if(list.length===0){ tl.innerHTML=''; empty.style.display='block'; return; }
   empty.style.display='none';
   const groups=groupByDate(list);
