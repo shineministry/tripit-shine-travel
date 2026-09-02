@@ -193,7 +193,12 @@ button{font-family:inherit}
     <div class="card card-pad">
       <div class="card-title">Your Trips <button class="btn btn-primary" style="padding:6px 10px;font-size:12px" onclick="createTrip()"><i class="fa-solid fa-plus"></i> New</button></div>
       <div class="trip-list" id="tripList"></div>
-      <button class="btn btn-ghost" style="width:100%;margin-top:10px;justify-content:center" onclick="importDemo()"><i class="fa-solid fa-rotate"></i> Load TripIt Demo</button>
+      <div id="noTripsHint" style="display:none;text-align:center;padding:14px;border:1px dashed var(--line);border-radius:12px;background:#f8fafc">
+        <div style="font-size:24px">✈️</div>
+        <div style="font-weight:700;font-size:13px;margin-top:4px">No trips yet</div>
+        <div style="font-size:12px;color:var(--muted)">Only your trips will appear here. Click New to add your first trip.</div>
+        <button class="btn btn-primary" style="margin-top:10px;justify-content:center" onclick="createTrip()"><i class="fa-solid fa-plus"></i> Add Your First Trip</button>
+      </div>
     </div>
 
     <div class="card card-pad" id="pro">
@@ -500,26 +505,31 @@ const TYPES = [
   {id:'other', label:'Other', icon:'fa-ellipsis', color:'#64748b'},
 ];
 
-let trips = JSON.parse(localStorage.getItem('shine_trips')||'null') || [
-  {id:'t1', name:'Mumbai → Vienna → Salzburg', from:'2026-08-18', to:'2026-08-22', city:'Salzburg • Anif', budget:2500, travelers:4},
-  {id:'t2', name:'Vatican & Rome Pilgrimage', from:'2026-09-10', to:'2026-09-15', city:'Rome • Vatican', budget:1800, travelers:2},
-];
-let activeTripId = localStorage.getItem('shine_active') || 't1';
-let segments = JSON.parse(localStorage.getItem('shine_segments')||'null') || [
-  {id:'s1', tripId:'t1', type:'flight', title:'IndiGo 6E 5036 — BOM → VIE', conf:'6E5036', date:'2026-08-18', time:'02:15', dur:'7h 45m', loc:'BOM Terminal 2 → VIE Terminal 1', iconNote:'Gate A12 • Seat 18A', notes:'Overnight flight. eTicket synced. Meal included.', cost:520, status:'Confirmed'},
-  {id:'s2', tripId:'t1', type:'wait', title:'Airport Waiting & Security Queue', conf:'', date:'2026-08-18', time:'00:30', dur:'90 min wait', loc:'BOM T2 Domestic→Intl transfer', iconNote:'Queue ~25 min • Fast-track eligible', notes:'Keep passport, boarding pass, liquids bag ready. Prayer room near Gate 4.', cost:0, status:'Confirmed'},
-  {id:'s3', tripId:'t1', type:'immigration', title:'Immigration & Border Check', conf:'', date:'2026-08-18', time:'06:50', dur:'30–50 min', loc:'VIE Arrival Hall', iconNote:'EU lane • eGates', notes:'Have Meldezettel, admission letter, insurance. Officer may ask proof of accommodation.', cost:0, status:'Confirmed'},
-  {id:'s4', tripId:'t1', type:'baggage', title:'Baggage Claim & Customs', conf:'BAG 23kg', date:'2026-08-18', time:'07:15', dur:'20 min', loc:'VIE Carousel 4', iconNote:'Carousel 4 • Tag VIE8821', notes:'AirTag in checked bag. If delayed, file at VIE Lost & Found Counter B.', cost:0, status:'Confirmed'},
-  {id:'s5', tripId:'t1', type:'lounge', title:'Jet Lounge Vienna — Shower & Rest', conf:'PP-8842', date:'2026-08-18', time:'07:45', dur:'2h 30m', loc:'VIE Airside, Level 2', iconNote:'Shower • Nap pod • Wi-Fi', notes:'Priority Pass. Quiet zone. Use layover to refresh before train.', cost:32, status:'Confirmed'},
-  {id:'s6', tripId:'t1', type:'train', title:'Railjet RJ 546 — Vienna → Salzburg', conf:'RJ546-9B', date:'2026-08-18', time:'10:30', dur:'2h 22m', loc:'Wien Hbf → Salzburg Hbf', iconNote:'Platform 7 • Coach 24', notes:'Scenic ride. Validate ticket in ÖBB app. Free Wi-Fi.', cost:39, status:'Confirmed'},
-  {id:'s7', tripId:'t1', type:'transit', title:'Bus 25 — Salzburg Hbf → Anif', conf:'', date:'2026-08-18', time:'13:00', dur:'22 min', loc:'Salzburg Local', iconNote:'Every 15 min', notes:'Ask for Herz-Jesu Missionare stop. Contact: P. Senzel pickup if needed.', cost:3, status:'Confirmed'},
-  {id:'s8', tripId:'t1', type:'hotel', title:'Internat SHM — Boarding House', conf:'ANIF-260818', date:'2026-08-18', time:'15:00', dur:'4 nights', loc:'Dr.-Th.-Gugl-Weg 1, 5081 Anif', iconNote:'Check-in 15:00 • Curfew 22:00', notes:'Bring Meldezettel, passport copies. Room sharing. Laundry on site.', cost:0, status:'Confirmed'},
-  {id:'s9', tripId:'t1', type:'health', title:'Insurance & Health Vault Check', conf:'OEGK-2026', date:'2026-08-19', time:'09:00', dur:'15 min', loc:'School Office', iconNote:'e-card • Vaccination', notes:'Upload OeGK card, keep emergency numbers: 144 / 122.', cost:0, status:'Confirmed'},
-  {id:'s10', tripId:'t1', type:'activity', title:'Old Town & Mirabell — Photo Walk', conf:'', date:'2026-08-19', time:'16:00', dur:'2h', loc:'Salzburg Altstadt', iconNote:'Photo spot • Free', notes:'Perfect for arrival photos. Try Salzach riverside at golden hour.', cost:0, status:'Confirmed'},
-];
-let expenses = JSON.parse(localStorage.getItem('shine_expenses')||'null') || [{name:'Flight IndiGo', amount:520, cur:'EUR €'},{name:'Railjet', amount:39, cur:'EUR €'},{name:'Lounge', amount:32, cur:'EUR €'}];
-let packing = JSON.parse(localStorage.getItem('shine_pack')||'null') || [{text:'Passport + Visa + Admission letter (waterproof pouch)', done:true},{text:'23kg checked bag — AirTag inside', done:true},{text:'Rosary, small cross', done:false},{text:'Power adapter EU + India', done:true},{text:'Medicines + prescription', done:false},{text:'School uniform & formal shoes', done:false}];
-let docs = JSON.parse(localStorage.getItem('shine_docs')||'null') || [{name:'Passport_SKM.pdf', size:'959 KB'},{name:'School Admission Letter.pdf', size:'52 KB'},{name:'Meldezettel_SHINEIL.pdf', size:'325 KB'}];
+let trips = JSON.parse(localStorage.getItem('shine_trips')||'null') || [];
+let activeTripId = localStorage.getItem('shine_active') || null;
+let segments = JSON.parse(localStorage.getItem('shine_segments')||'null') || [];
+let expenses = JSON.parse(localStorage.getItem('shine_expenses')||'null') || [];
+let packing = JSON.parse(localStorage.getItem('shine_pack')||'null') || [];
+let docs = JSON.parse(localStorage.getItem('shine_docs')||'null') || [];
+// one-time cleanup: remove any dummy demo data that was seeded in earlier versions
+(function cleanupDummy(){
+  const dummyTripNames = ['Mumbai → Vienna → Salzburg','Vatican & Rome Pilgrimage','Imported: Mumbai','Imported: Delhi'];
+  const isDummy = trips.some(t=> dummyTripNames.some(n=> (t.name||'').includes(n)) || ['t1','t2'].includes(t.id));
+  const isDummySeg = segments.some(s=> ['s1','s2','s3','s4','s5','s6','s7','s8','s9','s10'].includes(s.id) && s.tripId==='t1');
+  if(isDummy || isDummySeg){
+    // only wipes the known demo trips, keeps any user-created trips with other ids
+    trips = trips.filter(t=> !dummyTripNames.some(n=> (t.name||'').includes(n)) && !['t1','t2'].includes(t.id));
+    segments = segments.filter(s=> !(['s1','s2','s3','s4','s5','s6','s7','s8','s9','s10'].includes(s.id) && s.tripId==='t1') && !s.title.includes('Imported:'));
+    if(!trips.length) activeTripId = null;
+    else if(!trips.find(t=>t.id===activeTripId)) activeTripId = trips[0].id;
+    // clear related dummy expenses/docs/packing if they match demo values
+    if(expenses.length===3 && expenses[0].name==='Flight IndiGo') expenses=[];
+    if(packing.length===6 && packing[0].text.includes('Passport + Visa')) packing=[];
+    if(docs.length===3 && docs[0].name==='Passport_SKM.pdf') docs=[];
+    save();
+  }
+  if(!activeTripId && trips.length) activeTripId = trips[0].id;
+})();
 let filter = 'all';
 let selectedType = 'flight';
 let editingId = null;
@@ -537,25 +547,34 @@ function formatDate(d){ const dt=new Date(d); return dt.toLocaleDateString('en-G
 
 function renderTrips(){
   const el=document.getElementById('tripList');
-  el.innerHTML = trips.map(t=>`
-    <div class="trip ${t.id===activeTripId?'active':''}" onclick="switchTrip('${t.id}')">
-      <h4>${t.name}</h4>
-      <small>${formatDate(t.from)} – ${formatDate(t.to)} • ${t.city}</small>
-      <div class="trip-meta">
-        <span class="chip blue">${segments.filter(s=>s.tripId===t.id).length} plans</span>
-        <span class="chip">${t.travelers} travelers</span>
-        <span class="chip green">€${t.budget}</span>
+  const hint=document.getElementById('noTripsHint');
+  if(!trips.length){
+    el.innerHTML='';
+    if(hint) hint.style.display='block';
+  } else {
+    if(hint) hint.style.display='none';
+    el.innerHTML = trips.map(t=>`
+      <div class="trip ${t.id===activeTripId?'active':''}" onclick="switchTrip('${t.id}')">
+        <h4>${t.name}</h4>
+        <small>${formatDate(t.from)} – ${formatDate(t.to)} • ${t.city}</small>
+        <div class="trip-meta">
+          <span class="chip blue">${segments.filter(s=>s.tripId===t.id).length} plans</span>
+          <span class="chip">${t.travelers} travelers</span>
+          <span class="chip green">€${t.budget}</span>
+        </div>
       </div>
-    </div>
-  `).join('');
+    `).join('');
+  }
   const tr = trips.find(x=>x.id===activeTripId);
-  document.getElementById('tripTitle').textContent = tr? tr.name : 'No trip';
+  document.getElementById('tripTitle').textContent = tr? tr.name : 'No trip yet';
   document.getElementById('tripDates').textContent = tr? `${formatDate(tr.from)} → ${formatDate(tr.to)}` : '';
-  document.getElementById('tripSubtitle').textContent = tr? `${tr.city} • ${segments.filter(s=>s.tripId===tr.id).length} plans • Auto-import on` : '';
+  document.getElementById('tripSubtitle').textContent = tr? `${tr.city} • ${segments.filter(s=>s.tripId===tr.id).length} plans` : 'Add your first trip — only yours will be shown';
   // countdown
   if(tr){
     const diff=Math.ceil((new Date(tr.from) - new Date())/86400000);
     document.getElementById('countdown').textContent = diff>0? diff+' days' : diff===0? 'Today!' : Math.abs(diff)+' days ago';
+  } else {
+    document.getElementById('countdown').textContent = '—';
   }
 }
 
