@@ -171,6 +171,13 @@ button{font-family:inherit}
 .type-btn i{width:32px;height:32px;border-radius:50%;background:var(--blue);color:#fff;display:grid;place-items:center;font-size:15px}
 .type-btn.active{background:var(--blue) !important;color:#fff !important}
 .type-btn.active i{background:#fff !important;color:var(--blue) !important}
+.collapsible-section{border:1px solid var(--line);border-radius:12px;margin-top:10px;overflow:hidden}
+.collapsible-section-header{padding:10px 12px;background:#f8fafc;font-weight:700;font-size:13px;display:flex;justify-content:space-between;align-items:center;cursor:pointer}
+.collapsible-section-body{padding:12px;display:none}
+.collapsible-section-body.open{display:block}
+.more-details-box{border:1px solid #e2e8f0;border-radius:12px;padding:0;overflow:hidden;margin-top:12px}
+.more-details-head{padding:10px 14px;background:#f8fafc;font-weight:700;font-size:13px;display:flex;justify-content:space-between;align-items:center}
+.more-details-head button{background:none;border:none;color:var(--blue);font-weight:700;font-size:12px;cursor:pointer}
 /* TripIt 100% exact timeline */
 #itinerary .timeline{position:relative;padding-left:0}
 #itinerary .timeline:before{left:84px; width:2px; background:#cbd5e1; top:8px; bottom:8px; transition:all .4s ease}
@@ -431,10 +438,20 @@ button{font-family:inherit}
         </div>
           <div class="field"><label>Icon Note (shows as badge)</label><input id="fIconNote" placeholder="e.g. Fast-track, Shower, Carousel 4"></div>
         </div>
+        <!-- Dynamic TripIt all-questions per type -->
+        <div id="extraFields"></div>
         <div class="field"><label>Details / Notes</label><textarea id="fNotes" rows="2" placeholder="Gate, seat, lounge access, baggage tag, prayer room, queue time…"></textarea></div>
         <div class="grid2">
           <div class="field"><label>Cost (€)</label><input id="fCost" type="number" placeholder="0"></div>
           <div class="field"><label>Status</label><select id="fStatus"><option>Confirmed</option><option>Waitlisted</option><option>Cancelled</option><option>Check-in open</option></select></div>
+        </div>
+        <!-- TripIt More Details (Expand all / Show more) -->
+        <div id="moreDetailsBox" class="more-details-box">
+          <div class="more-details-head">
+            <span>More Details</span>
+            <button type="button" onclick="toggleAllMoreDetails()"><span id="expandAllLabel">▸ Expand all</span></button>
+          </div>
+          <div id="moreDetailsContent"></div>
         </div>
       </div>
       </div>
@@ -577,6 +594,126 @@ const TYPES = [
   {id:'transportation', label:'Transportation', icon:'fa-bus', color:'#0f6fb4'},
   {id:'wait', label:'Airport Wait', icon:'fa-hourglass-half', color:'#ff6b35'},
 ];
+// TripIt ALL QUESTIONS — exactly like TripIt create pages, per type (18 types)
+const TRIPIT_ALL_FIELDS = {
+  car: {
+    base:[
+      {label:'Rental Agency', id:'fRentalAgency', ph:'Enter Rental Agency'},
+      {label:'Pick-Up Date *', id:'fPickupDate', type:'date'},
+      {label:'Pick-Up Time', id:'fPickupTime', type:'time'},
+      {label:'Pick-Up Time Zone', id:'fPickupTZ', type:'select', opts:['Automatic Time Zone','IST GMT+5:30','CEST','UTC','EST','PST']},
+      {label:'Drop-Off Date *', id:'fDropoffDate', type:'date'},
+      {label:'Drop-Off Time', id:'fDropoffTime', type:'time'},
+      {label:'Drop-Off Time Zone', id:'fDropoffTZ', type:'select', opts:['Automatic Time Zone','IST GMT+5:30','CEST','UTC','EST','PST']},
+      {label:'Website', id:'fWebsite', ph:'Enter Website'},
+      {label:'Email', id:'fEmail', ph:'Enter Email', type:'email'},
+      {label:'Confirmation', id:'fConfirmation', ph:'Enter Confirmation'},
+      {label:'Total Cost', id:'fTotalCost', ph:'Enter Total Cost'},
+      {label:'Has this plan been booked?', id:'fBooked', type:'checkbox'},
+      {label:'Pick-Up Location', id:'fPickupLoc', ph:'Enter Pick-Up Location'},
+      {label:'Pick-Up Address', id:'fPickupAddr', ph:'Enter Address'},
+      {label:'Pick-Up Phone', id:'fPickupPhone', ph:'Enter Phone'},
+      {label:'Same as Pick-Up Location', id:'fSamePickup', type:'checkbox', def:true},
+      {label:'Drop-Off Location', id:'fDropoffLoc', ph:'Enter Drop-Off Location', depends:'!fSamePickup'},
+      {label:'Drop-Off Address', id:'fDropoffAddr', ph:'Enter Drop-Off Address', depends:'!fSamePickup'},
+      {label:'Drop-Off Phone', id:'fDropoffPhone', ph:'Enter Phone', depends:'!fSamePickup'},
+      {label:'Car Type', id:'fCarType', ph:'Enter Car Type'},
+      {label:'Mileage Charges', id:'fMileage', ph:'Enter Mileage Charges'},
+      {label:'Car Details', id:'fCarDetails', type:'textarea', ph:'Enter Car Details'},
+    ],
+    more:[
+      {title:'Drivers', fields:[{label:'Driver Name', id:'fDriverName', ph:'Enter Driver Name'},{label:'License', id:'fDriverLic', ph:'Enter License'},{label:'Driver Phone', id:'fDriverPhone2', ph:'Enter Phone'}]},
+      {title:'Booking Info', fields:[{label:'Booking Reference #', id:'fBookingRef', ph:'Enter Booking Reference'},{label:'Booking Site', id:'fBookingSite', ph:'Enter Booking Site'},{label:'Booking Date', id:'fBookingDate', type:'date'},{label:'Booking Site URL', id:'fBookingURL', ph:'Enter URL'},{label:'Booking Site Phone', id:'fBookingSitePhone', ph:'Enter Phone'},{label:'Booking Site Email', id:'fBookingEmail', ph:'Enter Email'},{label:'Booking Rate', id:'fBookingRate', ph:'Enter Rate'},{label:'Reservation Purchased', id:'fResPurchased', type:'select', opts:['Yes','No']},{label:'Restrictions and Policies', id:'fRestrictions', type:'textarea', ph:'Enter restrictions'}]},
+      {title:'Travel Agency Info', fields:[{label:'Travel Agency Name', id:'fAgencyName', ph:'Enter Agency Name'},{label:'Travel Agency Confirmation #', id:'fAgencyConf', ph:'Enter Confirmation'},{label:'Travel Agency URL', id:'fAgencyURL', ph:'Enter URL'},{label:'Travel Agency Phone', id:'fAgencyPhone', ph:'Enter Phone'},{label:'Travel Agency Email', id:'fAgencyEmail', ph:'Enter Email'},{label:'Travel Agency Contact', id:'fAgencyContact', ph:'Enter Contact'}]},
+    ]
+  },
+  flight:{
+    base:[
+      {label:'Airline', id:'fAirline', ph:'Air India, IndiGo...'},
+      {label:'Flight Number', id:'fFlightNo', ph:'AI 2424'},
+      {label:'Departure Airport', id:'fDepAir', ph:'BOM - Mumbai'},
+      {label:'Departure Date', id:'fDepDate', type:'date'},
+      {label:'Departure Time', id:'fDepTime', type:'time'},
+      {label:'Departure Time Zone', id:'fDepTZ', type:'select', opts:['Automatic Time Zone','IST GMT+5:30','CEST','UTC']},
+      {label:'Departure Terminal', id:'fDepTerm', ph:'Terminal'},
+      {label:'Departure Gate', id:'fDepGate', ph:'Gate'},
+      {label:'Arrival Airport', id:'fArrAir', ph:'DEL - Delhi'},
+      {label:'Arrival Date', id:'fArrDate', type:'date'},
+      {label:'Arrival Time', id:'fArrTime', type:'time'},
+      {label:'Arrival Time Zone', id:'fArrTZ', type:'select', opts:['Automatic Time Zone','IST GMT+5:30','CEST','UTC']},
+      {label:'Arrival Terminal', id:'fArrTerm', ph:'Terminal'},
+      {label:'Arrival Gate', id:'fArrGate', ph:'Gate'},
+      {label:'Seat(s)', id:'fSeat', ph:'16F'},
+      {label:'Duration', id:'fDuration', ph:'2H, 15M'},
+      {label:'Confirmation Code', id:'fFlightConf', ph:'Enter Confirmation'},
+      {label:'Total Cost', id:'fFlightCost', ph:'Enter Total Cost'},
+    ],
+    more:[
+      {title:'Aircraft and Service Details', fields:[{label:'Aircraft Type', id:'fAircraft', ph:'Airbus A320neo'},{label:'Stops', id:'fStops', type:'select', opts:['nonstop','1 stop','2 stops']},{label:'Distance', id:'fDistance', ph:'706 mi / 1136 km'},{label:'Meal', id:'fMeal', ph:'Enter Meal'},{label:'Entertainment', id:'fEntertainment', ph:'Enter Entertainment'},{label:'Baggage Claim', id:'fBaggageClaim', ph:'Enter Baggage Claim'},{label:'Fare Class', id:'fFareClass', ph:'Economy'},{label:'On-time %', id:'fOntime', ph:'Enter %'}]},
+      {title:'Booking Info', fields:[{label:'Booking Site', id:'fFlightBookingSite', ph:'Enter Booking Site'},{label:'Booking Date', id:'fFlightBookingDate', type:'date'},{label:'Booking Reference #', id:'fFlightBookingRef', ph:'Enter Reference'}]},
+      {title:'Travel Agency Info', fields:[{label:'Travel Agency Name', id:'fFlightAgency', ph:'Enter Agency Name'},{label:'Travel Agency Phone', id:'fFlightAgencyPhone', ph:'Enter Phone'}]},
+    ]
+  },
+  hotel:{
+    base:[
+      {label:'Hotel Name', id:'fHotelName', ph:'Enter Hotel Name'},
+      {label:'Address', id:'fHotelAddr', ph:'Enter Address'},
+      {label:'Phone', id:'fHotelPhone', ph:'Enter Phone'},
+      {label:'Check-in Date', id:'fCheckinDate', type:'date'},
+      {label:'Check-in Time', id:'fCheckinTime', type:'time'},
+      {label:'Check-out Date', id:'fCheckoutDate', type:'date'},
+      {label:'Check-out Time', id:'fCheckoutTime', type:'time'},
+      {label:'Time Zone', id:'fHotelTZ', type:'select', opts:['Automatic Time Zone','IST GMT+5:30','CEST']},
+      {label:'Confirmation #', id:'fHotelConf', ph:'Enter Confirmation'},
+      {label:'Total Cost', id:'fHotelCost', ph:'Enter Total Cost'},
+      {label:'Room Type', id:'fRoomType', ph:'Deluxe, Suite...'},
+      {label:'Website', id:'fHotelWebsite', ph:'Enter Website'},
+    ],
+    more:[
+      {title:'Booking Info', fields:[{label:'Booking Site', id:'fHotelBookingSite', ph:'Enter Booking Site'},{label:'Booking Reference', id:'fHotelBookingRef', ph:'Enter Reference'}]},
+      {title:'Travel Agency Info', fields:[{label:'Travel Agency Name', id:'fHotelAgency', ph:'Enter Agency Name'}]},
+    ]
+  },
+  wait:{
+    base:[
+      {label:'Airport', id:'fWaitAirport', ph:'BOM - Mumbai, VIE - Vienna'},
+      {label:'Terminal', id:'fWaitTerm', ph:'Terminal 1, T2'},
+      {label:'Gate', id:'fWaitGate', ph:'Gate A12'},
+      {label:'Date', id:'fWaitDate', type:'date'},
+      {label:'Start Time', id:'fWaitStart', type:'time'},
+      {label:'Wait Duration', id:'fWaitDur', ph:'45 min, 2 hours'},
+      {label:'Queue / Security', id:'fWaitQueue', ph:'Fast-track, 25 min queue'},
+      {label:'Lounge / Rest', id:'fWaitLounge', ph:'Jet Lounge, Shower, Nap pod'},
+    ],
+    more:[
+      {title:'Details', fields:[{label:'Source URL', id:'fWaitSource', ph:'https://...'}, {label:'Notes', id:'fWaitNotes', type:'textarea', ph:'Prayer room, quiet zone...'}]},
+    ]
+  },
+};
+// helper to get fields for any type — fallback to generic for 14 remaining types
+function getFieldsForType(id){
+  if(TRIPIT_ALL_FIELDS[id]) return TRIPIT_ALL_FIELDS[id];
+  // generic fallback covering TripIt common questions for Activity/Note/Concert/Parking/Cruise/Rail/Directions/Restaurant/Ferry/Theatre/Map/Tour/Meeting/Transportation
+  return {
+    base:[
+      {label:'Name / Title', id:'fGenTitle', ph:'Enter '+id+' name'},
+      {label:'Date', id:'fGenDate', type:'date'},
+      {label:'Time', id:'fGenTime', type:'time'},
+      {label:'Time Zone', id:'fGenTZ', type:'select', opts:['Automatic Time Zone','IST GMT+5:30','CEST','UTC']},
+      {label:'Location / Address', id:'fGenLoc', ph:'Enter location'},
+      {label:'Phone', id:'fGenPhone', ph:'Enter Phone'},
+      {label:'Website', id:'fGenWebsite', ph:'Enter Website'},
+      {label:'Email', id:'fGenEmail', ph:'Enter Email', type:'email'},
+      {label:'Confirmation #', id:'fGenConf', ph:'Enter Confirmation'},
+      {label:'Total Cost', id:'fGenCost', ph:'Enter Total Cost'},
+      {label:'Description / Details', id:'fGenDetails', type:'textarea', ph:'Enter details'},
+    ],
+    more:[
+      {title:'Booking Info', fields:[{label:'Booking Site', id:'fGenBookingSite', ph:'Enter Booking Site'},{label:'Booking Reference', id:'fGenBookingRef', ph:'Enter Reference'}]},
+      {title:'Travel Agency Info', fields:[{label:'Travel Agency Name', id:'fGenAgency', ph:'Enter Agency Name'}]},
+    ]
+  };
+}
 
 let trips = JSON.parse(localStorage.getItem('shine_trips')||'null') || [];
 let activeTripId = localStorage.getItem('shine_active') || null;
@@ -817,7 +954,96 @@ function showPlanStep(step){
 function selectPlanType(id){
   selectedType=id;
   renderTypeGrid();
+  renderExtraFields(id);
+  renderMoreDetails(id);
   showPlanStep('details');
+}
+function renderExtraFields(type){
+  const cfg=getFieldsForType(type);
+  const container=document.getElementById('extraFields');
+  if(!container) return;
+  container.innerHTML = cfg.base.map(f=>{
+    if(f.type==='textarea') return `<div class="field"><label>${f.label}</label><textarea id="${f.id}" placeholder="${f.ph||''}"></textarea></div>`;
+    if(f.type==='select') return `<div class="field"><label>${f.label}</label><select id="${f.id}">${f.opts.map(o=>`<option>${o}</option>`).join('')}</select></div>`;
+    if(f.type==='checkbox') return `<label style="display:flex;gap:8px;align-items:center;font-size:13px;margin:8px 0"><input type="checkbox" id="${f.id}" ${f.def?'checked':''}> ${f.label}</label>`;
+    const t=f.type||'text';
+    return `<div class="field"><label>${f.label}</label><input id="${f.id}" type="${t}" placeholder="${f.ph||''}"></div>`;
+  }).join('');
+  // depends visibility
+  cfg.base.forEach(f=>{
+    if(f.depends){
+      const depId=f.depends.replace('!','');
+      const depNeg=f.depends.startsWith('!');
+      const depEl=document.getElementById(depId);
+      const el=document.getElementById(f.id);
+      if(depEl && el){
+        const upd=()=>{
+          const val=depEl.type==='checkbox'? depEl.checked : depEl.value;
+          const show=depNeg ? !val : !!val;
+          el.closest('.field').style.display= show?'':'none';
+        };
+        depEl.addEventListener('change', upd); upd();
+      }
+    }
+  });
+}
+function renderMoreDetails(type){
+  const cfg=getFieldsForType(type);
+  const moreContainer=document.getElementById('moreDetailsContent');
+  if(!moreContainer) return;
+  moreContainer.innerHTML = cfg.more.map((sec, idx)=>`
+    <div class="collapsible-section">
+      <div class="collapsible-section-header" onclick="toggleMoreSection(${idx})">
+        <span>${sec.title}</span>
+        <span style="color:var(--blue);font-weight:700;font-size:12px" id="moreToggle${idx}">▸ Show more</span>
+      </div>
+      <div class="collapsible-section-body" id="moreSec${idx}">
+        ${sec.fields.map(f=>{
+          if(f.type==='textarea') return `<div class="field"><label>${f.label}</label><textarea id="${f.id}" placeholder="${f.ph||''}"></textarea></div>`;
+          if(f.type==='select') return `<div class="field"><label>${f.label}</label><select id="${f.id}">${f.opts.map(o=>`<option>${o}</option>`).join('')}</select></div>`;
+          if(f.type==='checkbox') return `<label style="display:flex;gap:8px;align-items:center;font-size:13px"><input type="checkbox" id="${f.id}"> ${f.label}</label>`;
+          return `<div class="field"><label>${f.label}</label><input id="${f.id}" type="${f.type||'text'}" placeholder="${f.ph||''}"></div>`;
+        }).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+function toggleMoreSection(idx){
+  const body=document.getElementById('moreSec'+idx);
+  const label=document.getElementById('moreToggle'+idx);
+  const isOpen=body.classList.contains('open');
+  body.classList.toggle('open', !isOpen);
+  label.textContent = isOpen ? '▸ Show more' : '▾ Show less';
+}
+function toggleAllMoreDetails(){
+  const all=document.querySelectorAll('#moreDetailsContent .collapsible-section-body');
+  const anyClosed=Array.from(all).some(el=> !el.classList.contains('open'));
+  all.forEach((el,i)=>{
+    el.classList.toggle('open', anyClosed);
+    const lbl=document.getElementById('moreToggle'+i);
+    if(lbl) lbl.textContent = anyClosed ? '▾ Show less' : '▸ Show more';
+  });
+  document.getElementById('expandAllLabel').textContent = anyClosed ? '▾ Collapse all' : '▸ Expand all';
+}
+function collectExtraFields(){
+  const cfg=getFieldsForType(selectedType);
+  const data={};
+  [...cfg.base, ...cfg.more.flatMap(s=> s.fields)].forEach(f=>{
+    const el=document.getElementById(f.id);
+    if(!el) return;
+    if(f.type==='checkbox') data[f.id]=el.checked;
+    else data[f.id]=el.value;
+  });
+  return data;
+}
+function populateExtraFields(data){
+  if(!data) return;
+  Object.entries(data).forEach(([k,v])=>{
+    const el=document.getElementById(k);
+    if(!el) return;
+    if(el.type==='checkbox') el.checked=!!v;
+    else el.value=v;
+  });
 }
 function openModal(){
   if(!activeTripId && !trips.length) { alert('Create a trip first: Your Trips → New'); return; }
@@ -850,6 +1076,32 @@ function renderTypeGrid(){
 function savePlan(){
   const title=document.getElementById('fTitle').value.trim();
   if(!title) return alert('Add a title');
+  const extraData=collectExtraFields();
+  // build detailsHtml from extra fields + notes — line-by-line bold Q&A exactly like TripIt
+  let extraHtml='';
+  const cfg=getFieldsForType(selectedType);
+  const allFields=[...cfg.base, ...cfg.more.flatMap(s=> s.fields)];
+  allFields.forEach(f=>{
+    const val=extraData[f.id];
+    if(val===undefined || val==='' || val===false) return;
+    if(f.depends){
+      const depId=f.depends.replace('!','');
+      const depNeg=f.depends.startsWith('!');
+      const depVal=extraData[depId];
+      if(depNeg && depVal) return;
+      if(!depNeg && !depVal) return;
+    }
+    const label=f.label.replace(/\s*\*\s*$/,'');
+    const display = f.type==='checkbox' ? (val ? 'Yes':'No') : String(val);
+    if(!display) return;
+    const esc=s=> s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    extraHtml += `<div style="display:flex;gap:8px;padding:3px 0;border-bottom:1px dashed #f1f5f9;font-size:12px;line-height:1.5"><span style="font-weight:700;color:#0f172a;min-width:170px;flex-shrink:0">${esc(label)}:</span><span style="color:#334155;flex:1">${esc(display)}</span></div>`;
+  });
+  // combine with Notes textarea if present
+  const notesVal=document.getElementById('fNotes').value.trim();
+  if(notesVal){
+    extraHtml += `<div style="display:flex;gap:8px;padding:3px 0;font-size:12px"><span style="font-weight:700;min-width:170px">Notes:</span><span style="color:#334155;white-space:pre-line">${notesVal.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</span></div>`;
+  }
   const seg={
     id: editingId || 's'+Date.now(),
     tripId: activeTripId,
@@ -857,7 +1109,9 @@ function savePlan(){
     title, conf:document.getElementById('fConf').value.trim(),
     date:document.getElementById('fDate').value, time:document.getElementById('fTime').value,
     dur:document.getElementById('fDur').value.trim(), loc:document.getElementById('fLoc').value.trim(),
-    iconNote:document.getElementById('fIconNote').value.trim(), notes:document.getElementById('fNotes').value.trim(),
+    iconNote:document.getElementById('fIconNote').value.trim(), notes: notesVal,
+    detailsHtml: extraHtml || null,
+    extraData,
     cost: Number(document.getElementById('fCost').value||0), status:document.getElementById('fStatus').value
   };
   if(editingId){
@@ -869,6 +1123,8 @@ function savePlan(){
 function editPlan(id){
   const s=segments.find(x=>x.id===id); if(!s) return;
   editingId=id; selectedType=s.type; renderTypeGrid();
+  renderExtraFields(selectedType);
+  renderMoreDetails(selectedType);
   document.getElementById('fTitle').value=s.title;
   document.getElementById('fConf').value=s.conf;
   document.getElementById('fDate').value=s.date;
@@ -879,6 +1135,7 @@ function editPlan(id){
   document.getElementById('fNotes').value=s.notes;
   document.getElementById('fCost').value=s.cost;
   document.getElementById('fStatus').value=s.status;
+  if(s.extraData) populateExtraFields(s.extraData);
   showPlanStep('details');
   document.getElementById('planModal').classList.add('open');
 }
