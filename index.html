@@ -2,7 +2,11 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Shine Travel">
+<meta name="mobile-web-app-capable" content="yes">
 <title>TripIt Shine Travel — Your Trips, Perfectly Organized. Better than TripIt.</title>
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
@@ -214,6 +218,40 @@ button{font-family:inherit}
 @keyframes iconGlowYellow{0%{transform:scale(1); box-shadow:0 0 0 2px #f59e0b, 0 0 8px rgba(245,158,11,.50)}50%{transform:scale(1.06); box-shadow:0 0 0 2px #f59e0b, 0 0 14px rgba(245,158,11,.80), 0 0 22px rgba(245,158,11,.40)}100%{transform:scale(1); box-shadow:0 0 0 2px #f59e0b, 0 0 8px rgba(245,158,11,.50)}}
 @keyframes lineGlow{0%{box-shadow:0 0 4px rgba(15,111,180,.30)}50%{box-shadow:0 0 8px rgba(15,111,180,.60)}100%{box-shadow:0 0 4px rgba(15,111,180,.30)}}
 @media(max-width:1100px){.main{grid-template-columns:1fr !important}.stats{grid-template-columns:repeat(2,1fr)}.type-grid{grid-template-columns:repeat(2,1fr) !important}}
+@media(max-width:768px){
+  .navbar{padding:10px 14px;gap:10px}
+  .brand{font-size:17px}
+  .nav-trips-btn{padding:6px 10px;font-size:12px}
+  .main{padding:0 12px;gap:12px}
+  #itinerary{padding:12px}
+  #itinerary .segment{grid-template-columns:68px 48px 1fr; gap:0; min-height:132px}
+  #itinerary .seg-time{width:68px; font-size:10px; padding:8px 8px 8px 4px}
+  #itinerary .seg-time b{font-size:12px}
+  #itinerary .seg-icons{width:48px}
+  #itinerary .seg-icon{width:38px;height:38px; font-size:13px}
+  #itinerary .seg-icon.middle{width:28px;height:28px; font-size:11px}
+  #itinerary .timeline:before{left:92px}
+  #itinerary .plan-separator{margin-left:92px}
+  .modal{width:96%; max-height:92vh; border-radius:16px}
+  .modal-body{padding:14px}
+  .grid2,.grid3{grid-template-columns:1fr}
+  .btn{padding:10px 14px; font-size:13px; min-height:42px} /* thumb-friendly */
+}
+@media(max-width:480px){
+  .navbar{flex-wrap:wrap; padding:8px 12px}
+  .navlinks{order:3;width:100%;overflow:auto;white-space:nowrap; gap:12px; padding-top:6px; -webkit-overflow-scrolling:touch}
+  .nav-actions{margin-left:auto}
+  #itinerary .segment{grid-template-columns:62px 44px 1fr; min-height:128px}
+  #itinerary .seg-time{width:62px; font-size:9px}
+  #itinerary .seg-time b{font-size:11px}
+  #itinerary .seg-icons{width:44px}
+  #itinerary .seg-icon{width:36px;height:36px; font-size:12px; border-width:2px}
+  #itinerary .seg-icon.middle{width:26px;height:26px}
+  #itinerary .timeline:before{left:84px}
+  #itinerary .plan-separator{margin-left:84px}
+  #itinerary .segment > div:nth-child(3){padding:8px 10px}
+  .nav-trips-dropdown{width:92vw; left:50%; transform:translateX(-50%); max-height:70vh}
+}
 @media(max-width:640px){.navbar{flex-wrap:wrap}.navlinks{order:3;width:100%;overflow:auto;white-space:nowrap}.hero h1{font-size:32px}.grid2,.grid3{grid-template-columns:1fr}.compare,.beyond{grid-template-columns:1fr}.segment{grid-template-columns:52px 1fr}.seg-actions{flex-direction:row;grid-column:1/-1;justify-content:flex-end}}
 </style>
 </head>
@@ -241,6 +279,7 @@ button{font-family:inherit}
     </div>
   </div>
   <div class="nav-actions">
+    <button id="pwaInstallBtn" class="btn btn-ghost" style="display:none;padding:7px 12px;font-size:12px;border-color:var(--blue);color:var(--blue)" onclick="installPWA()"><i class="fa-solid fa-mobile-screen-button"></i> Install App</button>
     <button class="btn btn-blue" onclick="openModal()" style="border-radius:999px;background:#fff;color:var(--blue);border:1px solid var(--line);box-shadow:none"><i class="fa-solid fa-plus" style="width:20px;height:20px;border-radius:50%;border:1px solid var(--blue);display:grid;place-items:center;font-size:11px"></i> Add a Plan</button>
     <div id="userBox" style="display:flex;align-items:center;gap:6px"><img id="userAvatar" src="https://i.pravatar.cc/100?img=15" alt="avatar" style="width:30px;height:30px;border-radius:50%;border:2px solid var(--line)"><span id="userName" style="font-size:11px;font-weight:700;color:var(--muted)"></span><button id="logoutBtn" class="btn btn-ghost" style="display:none;padding:6px 10px;font-size:11px" onclick="googleLogout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</button></div>
   </div>
@@ -2132,6 +2171,30 @@ window.addEventListener('load', ()=>{
   if(!savedShare && document.getElementById('tripitShareUrl') && !document.getElementById('tripitShareUrl').value) document.getElementById('tripitShareUrl').placeholder='https://www.tripit.com/p/B7598A827337133B339593FB87C87F79';
   document.getElementById('tripitImportModal').addEventListener('click', e=>{ if(e.target===e.currentTarget) e.currentTarget.classList.remove('open'); });
 });
+</script>
+<script>
+// PWA — best mobile experience, offline, installable like native app
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=> navigator.serviceWorker.register('./sw.js').then(()=> console.log('PWA ready')).catch(()=>{}));
+}
+let deferredPrompt=null;
+window.addEventListener('beforeinstallprompt', e=>{
+  e.preventDefault(); deferredPrompt=e;
+  const b=document.getElementById('pwaInstallBtn');
+  if(b) b.style.display='inline-flex';
+});
+function installPWA(){
+  if(deferredPrompt){
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(()=>{ deferredPrompt=null; const b=document.getElementById('pwaInstallBtn'); if(b) b.style.display='none'; });
+  } else {
+    alert('To install Shine Travel as app:\n\n• Android Chrome: tap ⋮ → Install app / Add to Home screen\n• iPhone Safari: tap Share (↑) → Add to Home Screen\n• Desktop Chrome: address bar → Install icon');
+  }
+}
+window.addEventListener('appinstalled', ()=>{ const b=document.getElementById('pwaInstallBtn'); if(b) b.style.display='none'; });
+// offline toast
+window.addEventListener('online', ()=>{ const t=document.getElementById('offlineToast'); if(t) t.style.display='none'; });
+window.addEventListener('offline', ()=>{ let t=document.getElementById('offlineToast'); if(!t){ t=document.createElement('div'); t.id='offlineToast'; t.style.cssText='position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:#0f172a;color:#fff;padding:10px 16px;border-radius:999px;font-size:13px;z-index:99;box-shadow:0 8px 24px rgba(0,0,0,.2)'; t.textContent='Offline — your trips are still available'; document.body.appendChild(t); } t.style.display='block'; setTimeout(()=> t.style.display='none', 3000); });
 </script>
 </body>
 </html>
