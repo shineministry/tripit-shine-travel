@@ -917,8 +917,8 @@ function render(){
           <div class="seg-icon" style="background:${t.color}"><i class="fa-solid ${t.icon}"></i></div>
           <div>
             <div class="seg-title" style="color:#0f6fb4">${s.title} ${s.type==='wait'?`<span style="font-size:10px;background:#fff1ec;color:#ff6b35;padding:2px 6px;border-radius:999px;border:1px solid #ffddd0">Airport Wait</span>`:''}</div>
-            ${s.type==='car' && s.subType ? `<div style="font-size:12px;color:#334155"> ${s.subType==='pickup'?'Pick up':'Drop off'} ${time12.hm} ${time12.ap} GMT+5:30</div>` : ''}
-            ${s.type==='car' && s.subType ? `<div style="font-size:12px;color:#475569">${s.loc || '51'}</div>` : `<div class="seg-sub" style="color:#475569">${s.type==='flight' || s.type==='transportation' ? s.loc : ''}${s.loc && s.type!=='flight' && s.type!=='transportation' ? s.loc : ''}${s.conf?` &nbsp; <span style="color:#94a3b8">#${s.conf}</span>`:''}</div>`}
+            ${s.subLabel ? `<div style="font-size:12px;color:#334155">${s.subLabel} ${time12.hm} ${time12.ap} GMT+5:30</div>` : ''}
+            ${s.subLabel ? `<div style="font-size:12px;color:#475569">${s.loc || '51'}</div>` : `<div class="seg-sub" style="color:#475569">${s.type==='flight' || s.type==='transportation' ? s.loc : ''}${s.loc && s.type!=='flight' && s.type!=='transportation' ? s.loc : ''}${s.conf?` &nbsp; <span style="color:#94a3b8">#${s.conf}</span>`:''}</div>`}
             ${s.iconNote && s.type!=='wait' && s.type!=='car' ?`<div style="font-size:11px;color:#64748b;margin-top:2px"><i class="fa-solid ${t.icon}" style="color:#0f6fb4"></i> ${s.iconNote}</div>`:''}
             ${s.detailsHtml ? `<div style="margin-top:6px;background:#fcfdff;border:1px solid #eef2f7;border-radius:10px;padding:8px 10px">${s.detailsHtml}</div>` : (s.notes?`<div style="font-size:12px;color:#334155;margin-top:6px;white-space:pre-line">${s.notes}</div>`:'')}
             ${!s.detailsHtml && (s.type==='flight' || s.type==='rail') ? `<div style="font-size:11px;color:#64748b;margin-top:4px">Duration: ${s.dur||'—'} • Seat: ${s.iconNote||'—'}</div>` : ``}
@@ -1121,26 +1121,44 @@ function savePlan(){
   if(notesVal){
     extraHtml += `<div style="display:flex;gap:8px;padding:3px 0;font-size:12px"><span style="font-weight:700;min-width:170px">Notes:</span><span style="color:#334155;white-space:pre-line">${notesVal.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</span></div>`;
   }
-  // Car Rental: exactly like TripIt — two icons (Pick up / Drop off) as separate timeline entries
-  if(selectedType==='car' && !editingId){
-    const pickupDate = extraData.fPickupDate || document.getElementById('fDate').value;
-    const pickupTime = extraData.fPickupTime || document.getElementById('fTime').value || '00:00';
-    const dropoffDate = extraData.fDropoffDate || pickupDate;
-    const dropoffTime = extraData.fDropoffTime || '00:30';
-    const pickupLoc = extraData.fPickupLoc || document.getElementById('fLoc').value.trim() || extraData.fPickupAddr || '';
-    const dropoffLoc = extraData.fSamePickup ? pickupLoc : (extraData.fDropoffLoc || extraData.fDropoffAddr || pickupLoc);
-    // ensure dates
-    if(pickupDate && dropoffDate){
-      const base = {type:selectedType, title, conf:document.getElementById('fConf').value.trim(), dur:document.getElementById('fDur').value.trim(), iconNote:document.getElementById('fIconNote').value.trim(), notes: notesVal, detailsHtml: extraHtml || null, extraData, cost: Number(document.getElementById('fCost').value||0), status:document.getElementById('fStatus').value};
-      const seg1={id:'s'+Date.now(), tripId:activeTripId, ...base, title: title, date: pickupDate, time: pickupTime, loc: pickupLoc, subType:'pickup'};
-      const seg2={id:'s'+(Date.now()+1), tripId:activeTripId, ...base, title: title, date: dropoffDate, time: dropoffTime, loc: dropoffLoc, subType:'dropoff'};
-      // add Pick Up / Drop Off to details for clarity
-      seg1.detailsHtml = `<div style="font-weight:700;color:#0f6fb4;font-size:11px;margin-bottom:4px">Pick Up</div>` + (extraHtml||'');
-      seg2.detailsHtml = `<div style="font-weight:700;color:#0f6fb4;font-size:11px;margin-bottom:4px">Drop Off</div>` + (extraHtml||'');
-      // different notes to distinguish
-      segments.push(seg1, seg2);
-      editingId=null; closeModal(); save(); render();
-      return;
+  // Two-icon handling — like TripIt: every plan with start+end gets two timeline dots (Pick Up/Drop Off, Depart/Arrive, Check In/Out, etc.)
+  if(!editingId){
+    const twoMap={
+      car: {sDate:'fPickupDate', sTime:'fPickupTime', sLoc:'fPickupLoc', eDate:'fDropoffDate', eTime:'fDropoffTime', eLoc:'fDropoffLoc', sAltLoc:'fPickupAddr', eAltLoc:'fDropoffAddr', sLabel:'Pick Up', eLabel:'Drop Off'},
+      flight: {sDate:'fDepDate', sTime:'fDepTime', sLoc:'fDepAir', eDate:'fArrDate', eTime:'fArrTime', eLoc:'fArrAir', sLabel:'Depart', eLabel:'Arrive'},
+      hotel: {sDate:'fCheckinDate', sTime:'fCheckinTime', sLoc:'fHotelAddr', eDate:'fCheckoutDate', eTime:'fCheckoutTime', eLoc:'fHotelAddr', sLabel:'Check In', eLabel:'Check Out'},
+      rail: {sDate:'fDepDate', sTime:'fDepTime', sLoc:'fDepAir', eDate:'fArrDate', eTime:'fArrTime', eLoc:'fArrAir', sLabel:'Depart', eLabel:'Arrive'},
+      cruise: {sDate:'fDepDate', sTime:'fDepTime', sLoc:'fDepAir', eDate:'fArrDate', eTime:'fArrTime', eLoc:'fArrAir', sLabel:'Depart', eLabel:'Arrive'},
+      ferry: {sDate:'fDepDate', sTime:'fDepTime', sLoc:'fDepAir', eDate:'fArrDate', eTime:'fArrTime', eLoc:'fArrAir', sLabel:'Depart', eLabel:'Arrive'},
+      transportation: {sDate:'fPickupDate', sTime:'fPickupTime', sLoc:'fPickupLoc', eDate:'fDropoffDate', eTime:'fDropoffTime', eLoc:'fDropoffLoc', sLabel:'Pick Up', eLabel:'Drop Off'},
+    };
+    const cfg2 = twoMap[selectedType];
+    if(cfg2){
+      const sDate = extraData[cfg2.sDate] || document.getElementById('fDate').value;
+      const sTime = extraData[cfg2.sTime] || document.getElementById('fTime').value || '09:00';
+      const eDate = extraData[cfg2.eDate] || sDate;
+      const eTime = extraData[cfg2.eTime] || '10:00';
+      let sLoc = extraData[cfg2.sLoc] || (cfg2.sAltLoc? extraData[cfg2.sAltLoc]:'') || document.getElementById('fLoc').value.trim() || '';
+      let eLoc = extraData[cfg2.eLoc] || (cfg2.eAltLoc? extraData[cfg2.eAltLoc]:'') || sLoc;
+      if(selectedType==='car' && extraData.fSamePickup) eLoc = sLoc;
+      // create two if dates/times/locs differ or even if same (always two for these types, like TripIt)
+      if(sDate && eDate){
+        const base = {type:selectedType, title, conf:document.getElementById('fConf').value.trim(), dur:document.getElementById('fDur').value.trim(), iconNote:document.getElementById('fIconNote').value.trim(), notes: notesVal, detailsHtml: extraHtml || null, extraData, cost: Number(document.getElementById('fCost').value||0), status:document.getElementById('fStatus').value};
+        const seg1={id:'s'+Date.now(), tripId:activeTripId, ...base, title: title, date: sDate, time: sTime, loc: sLoc, subType: cfg2.sLabel.toLowerCase().replace(' ','')};
+        const seg2={id:'s'+(Date.now()+1), tripId:activeTripId, ...base, title: title, date: eDate, time: eTime, loc: eLoc, subType: cfg2.eLabel.toLowerCase().replace(' ','')};
+        seg1.subLabel=cfg2.sLabel; seg2.subLabel=cfg2.eLabel;
+        seg1.detailsHtml = `<div style="font-weight:700;color:#0f6fb4;font-size:11px;margin-bottom:4px">${cfg2.sLabel}</div>` + (extraHtml||'');
+        seg2.detailsHtml = `<div style="font-weight:700;color:#0f6fb4;font-size:11px;margin-bottom:4px">${cfg2.eLabel}</div>` + (extraHtml||'');
+        segments.push(seg1, seg2);
+        editingId=null; closeModal(); save(); render();
+        return;
+      }
+    }
+    // generic fallback: if any type has two distinct dates in extraData (like generic), also split if both present
+    const genStart = extraData.fGenDate || extraData.fCheckinDate || extraData.fDepDate || extraData.fPickupDate;
+    const genEnd = extraData.fGenDate ? null : (extraData.fCheckoutDate || extraData.fArrDate || extraData.fDropoffDate);
+    if(genStart && genEnd && genStart!==genEnd){
+      // treat as two — not needed for single-date generic types
     }
   }
   const seg={
