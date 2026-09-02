@@ -984,47 +984,13 @@ function render(){
       </div>
       ${items.map((s, idx)=>{
         const t=typeMeta(s.type);
-        // get start/end for FROM/TO times (for top/bottom icons)
-        let sDate=s.date, sTime=s.time, eDate=s.date, eTime=s.time;
-        if(s.extraData){
-          if(s.type==='car'){ sDate=s.extraData.fPickupDate||s.date; sTime=s.extraData.fPickupTime||s.time; eDate=s.extraData.fDropoffDate||sDate; eTime=s.extraData.fDropoffTime||sTime; }
-          else if(s.type==='flight'){ sDate=s.extraData.fDepDate||s.date; sTime=s.extraData.fDepTime||s.time; eDate=s.extraData.fArrDate||sDate; eTime=s.extraData.fArrTime||sTime; }
-          else if(s.type==='hotel'){ sDate=s.extraData.fCheckinDate||s.date; sTime=s.extraData.fCheckinTime||s.time; eDate=s.extraData.fCheckoutDate||sDate; eTime=s.extraData.fCheckoutTime||sTime; }
-        }
-        const start12=formatTime12(sTime), end12=formatTime12(eTime);
-        const durDisp = s.dur || (sDate!==eDate || sTime!==eTime ? '30 min' : '');
-        // per-plan precise location: near FROM, middle, near TO, with 5min ended buffer and thick line
-        let segState='idle';
-        const now=new Date();
-        const startDt=new Date(sDate+'T'+(sTime||'00:00'));
-        const endDt=new Date(eDate+'T'+(eTime||'00:00'));
-        const nearWin=30*60*1000, endedBuf=5*60*1000;
-        if(!isNaN(startDt) && !isNaN(endDt)){
-          if(now < new Date(startDt.getTime() - nearWin)) segState='idle';
-          else if(now > new Date(endDt.getTime() + endedBuf)) segState='idle';
-          else if(Math.abs(now - startDt) <= nearWin) segState='near-from';
-          else if(Math.abs(now - endDt) <= nearWin) segState='near-to';
-          else if(now > new Date(startDt.getTime()+nearWin) && now < new Date(endDt.getTime()-nearWin)) segState='glow-middle';
-          else if(now >= startDt && now <= endDt) segState='glow-middle';
-          else segState='idle';
-        }
-        if(timelineState==='idle') segState='idle';
-        let segClass='segment idle';
-        if(segState==='near-from') segClass='segment glow-top';
-        else if(segState==='near-to') segClass='segment glow-bottom';
-        else if(segState==='glow-middle') segClass='segment glow-middle';
+        const time12 = formatTime12(s.time);
+        const isActive = s.id===activeSegId;
+        const segClass = isActive ? 'segment glow' : 'segment idle';
         return `<div class="${segClass}">
-          <div class="seg-time" style="display:flex;flex-direction:column;justify-content:space-between;gap:4px;padding:8px 10px 8px 6px">
-            <div style="text-align:right"><b>${start12.hm}</b><span style="font-size:10px"> ${start12.ap}<br>GMT+5:30</span></div>
-            <div style="font-size:9px;color:#64748b;text-align:right">${durDisp}</div>
-            <div style="text-align:right"><b>${end12.hm}</b><span style="font-size:10px"> ${end12.ap}<br>GMT+5:30</span></div>
-          </div>
+          <div class="seg-time"><b>${time12.hm}</b><span>${time12.ap} <br>GMT+5:30</span>${s.dur?`<span style="margin-top:4px;font-size:10px;color:#94a3b8">${s.dur}</span>`:''}</div>
           <div class="seg-icons">
-            <div class="seg-icon top" style="background:${segState==='near-from' || segState==='glow-middle' ? t.color : '#94a3b8'}"><i class="fa-solid ${t.icon}"></i></div>
-            <div class="seg-line"></div>
-            <div class="seg-icon middle" style="background:${segState==='glow-middle' ? t.color : '#94a3b8'}; ${segState==='near-from' || segState==='near-to' ? 'display:none' : ''}"><i class="fa-solid ${t.icon}"></i></div>
-            <div class="seg-line" style="${segState==='near-from' || segState==='near-to' ? 'display:none' : ''}"></div>
-            <div class="seg-icon bottom" style="background:${segState==='near-to' || segState==='glow-middle' ? t.color : '#94a3b8'}"><i class="fa-solid ${t.icon}"></i></div>
+            <div class="seg-icon" style="background:${isActive? t.color : '#94a3b8'}"><i class="fa-solid ${t.icon}"></i></div>
           </div>
           <div id="seg-${s.id}" onclick="togglePlanDetails('${s.id}')" style="cursor:pointer">
             <div class="seg-title" style="color:#0f6fb4;font-size:16px;font-weight:700">${s.title} ${s.type==='wait'?`<span style="font-size:10px;background:#fff1ec;color:#ff6b35;padding:2px 6px;border-radius:999px;border:1px solid #ffddd0">Airport Wait</span>`:''}</div>
@@ -1035,7 +1001,7 @@ function render(){
             <button class="icon-btn" title="Edit" onclick="editPlan('${s.id}')" style="width:28px;height:28px"><i class="fa-solid fa-pen" style="font-size:11px"></i></button>
             <button class="icon-btn" title="Delete" onclick="delPlan('${s.id}')" style="width:28px;height:28px"><i class="fa-solid fa-trash" style="font-size:11px"></i></button>
           </div>
-        </div>${idx < items.length-1 ? `<div class="plan-separator ${segState!=='idle'?'active':''}"></div>` : ''}`;
+        </div>${idx < items.length-1 ? `<div class="plan-separator ${isActive?'active':''}"></div>` : ''}`;
       }).join('')}
     </div>`;
   }).join('');
