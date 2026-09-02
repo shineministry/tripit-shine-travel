@@ -956,7 +956,7 @@ function render(){
         const now=new Date();
         const startDt=new Date(sDate+'T'+(sTime||'00:00'));
         const endDt=new Date(eDate+'T'+(eTime||'00:00'));
-        const nearWin=30*60*1000, endedBuf=5*60*1000;
+        const nearWin=10*60*1000, endedBuf=5*60*1000;
         if(!isNaN(startDt) && !isNaN(endDt)){
           if(now < new Date(startDt.getTime() - nearWin)) segState='idle';
           else if(now > new Date(endDt.getTime() + endedBuf)) segState='idle';
