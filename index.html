@@ -151,10 +151,19 @@ button{font-family:inherit}
 .autocomplete-item:last-child{border:none}
 .autocomplete-item i{color:var(--blue);margin-top:2px}
 #mapPicker{height:360px;border-radius:14px;border:1px solid var(--line)}
-/* SIMPLE TRIPIT MODE — hide extra clutter, like screenshot */
+/* SIMPLE TRIPIT MODE — hide extra clutter, like screenshot — YOUR TRIPS + BUDGET moved to navbar, wider content */
 .stats, #pro, .right-col, #map, #docs, .beyond, .compare {display:none !important}
-.main{grid-template-columns:280px 1fr !important; max-width:1000px !important}
+.main{grid-template-columns:1fr !important; max-width:1100px !important}
+.main > div:first-child{display:none !important}
+#itinerary{max-width:1000px; margin:0 auto; width:100%}
 .filters{display:none !important}
+.nav-trips{position:relative}
+.nav-trips-btn{background:#f0f7ff;border:1px solid #bfdbfe;color:var(--blue);padding:7px 12px;border-radius:999px;font-weight:700;font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.nav-trips-dropdown{position:absolute;top:100%;left:0;margin-top:8px;width:360px;background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow-lg);padding:8px;display:none;z-index:60;max-height:420px;overflow:auto}
+.nav-trips-dropdown.open{display:block}
+.nav-trip-item{padding:10px 12px;border-radius:10px;cursor:pointer;border:1px solid transparent}
+.nav-trip-item:hover{background:#f8fafc;border-color:#e2e8f0}
+.nav-trip-item.active{background:#f0f7ff;border-color:#bfdbfe}
 .topbar button, .navlinks a[href="#map"], .navlinks a[href="#docs"], .navlinks a[href="#pro"]{display:none !important}
 #gmapsKeyWrap, .loc-extra {display:none !important}
 .type-grid{grid-template-columns:repeat(2,1fr) !important; gap:0 !important; border:1px solid var(--line); border-radius:12px; overflow:hidden}
@@ -188,8 +197,23 @@ button{font-family:inherit}
 
 <nav class="navbar">
   <div class="brand"><div class="brand-mark"><i class="fa-solid fa-plane"></i></div> TripIt Shine <span style="font-weight:500;color:var(--muted);font-size:13px;letter-spacing:.04em">TRAVEL</span></div>
-  <div class="navlinks">
+  <div class="navlinks" style="align-items:center">
     <a class="active" href="#">Itinerary</a>
+    <div class="nav-trips">
+      <button class="nav-trips-btn" onclick="toggleTripsDropdown(event)"><i class="fa-solid fa-suitcase"></i> <span id="navTripsLabel">Your Trips</span> <i class="fa-solid fa-chevron-down" style="font-size:10px"></i></button>
+      <div id="navTripsDropdown" class="nav-trips-dropdown">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 4px 8px"><b style="font-size:12px">YOUR TRIPS</b><button class="btn btn-primary" style="padding:5px 10px;font-size:11px" onclick="createTrip(); closeTripsDropdown()"><i class="fa-solid fa-plus"></i> New</button></div>
+        <div id="navTripList"></div>
+        <div id="navNoTrips" style="display:none;text-align:center;padding:12px;border:1px dashed var(--line);border-radius:10px;background:#f8fafc">
+          <div style="font-size:12px;color:var(--muted)">No trips yet</div>
+          <button class="btn btn-primary" style="margin-top:8px;padding:6px 10px;font-size:11px" onclick="createTrip(); closeTripsDropdown()">+ Add Your First Trip</button>
+        </div>
+        <div style="border-top:1px solid var(--line);margin-top:8px;padding-top:8px;display:flex;gap:6px">
+          <button class="btn btn-ghost" style="flex:1;justify-content:center;padding:7px;font-size:11px" onclick="closeTripsDropdown(); document.getElementById('tripitImportModal').classList.add('open')"><i class="fa-solid fa-cloud-arrow-down"></i> Import TripIt</button>
+          <button class="btn btn-ghost" style="flex:1;justify-content:center;padding:7px;font-size:11px" onclick="clearAllTrips()"><i class="fa-solid fa-trash"></i> Clear</button>
+        </div>
+      </div>
+    </div>
   </div>
   <div class="nav-actions">
     <button class="btn btn-blue" onclick="openModal()" style="border-radius:999px;background:#fff;color:var(--blue);border:1px solid var(--line);box-shadow:none"><i class="fa-solid fa-plus" style="width:20px;height:20px;border-radius:50%;border:1px solid var(--blue);display:grid;place-items:center;font-size:11px"></i> Add a Plan</button>
@@ -197,7 +221,7 @@ button{font-family:inherit}
   </div>
 </nav>
 
-<div style="max-width:1000px;margin:10px auto 0;padding:0 24px;display:flex;gap:8px;align-items:center">
+<div style="max-width:1100px;margin:10px auto 0;padding:0 24px;display:flex;gap:8px;align-items:center">
   <div style="font-size:12px;color:var(--muted)"><span id="tripCountLabel"></span></div>
   <button class="btn btn-ghost" style="margin-left:auto;padding:6px 10px;font-size:11px;border:none;color:var(--muted)" onclick="if(confirm('Import from TripIt.com?')) document.getElementById('tripitImportModal').classList.add('open')"><i class="fa-solid fa-cloud-arrow-down"></i> Import TripIt</button>
 </div>
@@ -600,16 +624,18 @@ function formatTime12(t){ // "14:30" -> {hm:"2:30", ap:"pm"}
   return {hm: hh+':'+String(m).padStart(2,'0'), ap};
 }
 
+function toggleTripsDropdown(e){ e.stopPropagation(); document.getElementById('navTripsDropdown').classList.toggle('open'); }
+function closeTripsDropdown(){ document.getElementById('navTripsDropdown').classList.remove('open'); }
+document.addEventListener('click', (e)=>{ if(!e.target.closest('.nav-trips')) closeTripsDropdown(); });
 function renderTrips(){
   const el=document.getElementById('tripList');
   const hint=document.getElementById('noTripsHint');
-  if(!trips.length){
-    el.innerHTML='';
-    if(hint) hint.style.display='block';
-  } else {
-    if(hint) hint.style.display='none';
-    el.innerHTML = trips.map(t=>`
-      <div class="trip ${t.id===activeTripId?'active':''}" onclick="switchTrip('${t.id}')">
+  const navEl=document.getElementById('navTripList');
+  const navHint=document.getElementById('navNoTrips');
+  const navLabel=document.getElementById('navTripsLabel');
+  if(navLabel) navLabel.textContent = trips.length ? `Your Trips (${trips.length})` : 'Your Trips';
+  const tripHtml = (t)=>`
+      <div class="trip ${t.id===activeTripId?'active':''}" onclick="switchTrip('${t.id}'); closeTripsDropdown()">
         <div style="display:flex;gap:8px;align-items:start;justify-content:space-between">
           <div style="flex:1;min-width:0"><h4>${t.name}</h4><small>${formatDate(t.from)} – ${formatDate(t.to)} • ${t.city}</small></div>
           <button class="icon-btn" title="Delete trip entirely" onclick="event.stopPropagation(); deleteTripById('${t.id}')" style="width:26px;height:26px;color:#ef4444;border-color:#fecaca"><i class="fa-solid fa-trash" style="font-size:11px"></i></button>
@@ -619,6 +645,21 @@ function renderTrips(){
           <span class="chip">${t.travelers} travelers</span>
           <span class="chip green">€${t.budget}</span>
         </div>
+      </div>
+    `;
+  if(!trips.length){
+    if(el) el.innerHTML='';
+    if(hint) hint.style.display='block';
+    if(navEl) navEl.innerHTML='';
+    if(navHint) navHint.style.display='block';
+  } else {
+    if(hint) hint.style.display='none';
+    if(navHint) navHint.style.display='none';
+    if(el) el.innerHTML = trips.map(tripHtml).join('');
+    if(navEl) navEl.innerHTML = trips.map(t=>`
+      <div class="nav-trip-item ${t.id===activeTripId?'active':''}" onclick="switchTrip('${t.id}'); closeTripsDropdown()">
+        <div style="font-weight:700;font-size:13px">${t.name}</div>
+        <div style="font-size:11px;color:var(--muted)">${formatDate(t.from)} – ${formatDate(t.to)} • ${t.city} • ${segments.filter(s=>s.tripId===t.id).length} plans</div>
       </div>
     `).join('');
   }
