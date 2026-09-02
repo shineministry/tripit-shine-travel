@@ -6,6 +6,7 @@
 <title>TripIt Shine Travel — Your Trips, Perfectly Organized. Better than TripIt.</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <style>
 :root{
   --blue:#0f6fb4;
@@ -134,6 +135,14 @@ button{font-family:inherit}
 .beyond-card h4{font-size:13px;display:flex;gap:8px;align-items:center}
 .beyond-card p{font-size:12px;color:var(--muted);margin-top:6px}
 .kbd{font-size:11px;padding:3px 6px;border-radius:6px;background:#f1f5f9;border:1px solid #e2e8f0;border-bottom-width:2px}
+.loc-wrap{position:relative}
+.autocomplete-list{position:absolute;left:0;right:0;top:100%;z-index:90;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow-lg);margin-top:6px;max-height:220px;overflow:auto;display:none}
+.autocomplete-list.open{display:block}
+.autocomplete-item{padding:10px 12px;font-size:13px;cursor:pointer;display:flex;gap:8px;align-items:start;border-bottom:1px solid #f1f5f9}
+.autocomplete-item:hover{background:#f8fafc}
+.autocomplete-item:last-child{border:none}
+.autocomplete-item i{color:var(--blue);margin-top:2px}
+#mapPicker{height:360px;border-radius:14px;border:1px solid var(--line)}
 @media(max-width:1100px){.hero{grid-template-columns:1fr}.main{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}.type-grid{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:640px){.navbar{flex-wrap:wrap}.navlinks{order:3;width:100%;overflow:auto;white-space:nowrap}.hero h1{font-size:32px}.grid2,.grid3{grid-template-columns:1fr}.compare,.beyond{grid-template-columns:1fr}.segment{grid-template-columns:52px 1fr}.seg-actions{flex-direction:row;grid-column:1/-1;justify-content:flex-end}}
 </style>
@@ -363,7 +372,26 @@ button{font-family:inherit}
         <div class="field"><label>Duration / Wait</label><input id="fDur" placeholder="e.g. 7h 20m or 45 min wait"></div>
       </div>
       <div class="grid2">
-        <div class="field"><label>Location / Airport / Hotel</label><input id="fLoc" placeholder="e.g. BOM T2 → VIE T1"></div>
+        <div class="field"><label>Location / Airport / Hotel <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted);font-size:11px">— Google Maps + manual typing</span></label>
+          <div class="loc-wrap">
+            <input id="fLoc" placeholder="e.g. BOM T2 → VIE T1 or search any address" autocomplete="off">
+            <div id="locSuggest" class="autocomplete-list"></div>
+          </div>
+          <div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap">
+            <button type="button" class="btn btn-ghost" style="padding:6px 10px;font-size:12px" onclick="pickOnMap()"><i class="fa-solid fa-map-location-dot"></i> Pick on Map</button>
+            <button type="button" class="btn btn-ghost" style="padding:6px 10px;font-size:12px" onclick="useMyLocation()"><i class="fa-solid fa-location-crosshairs"></i> Use my location</button>
+            <button type="button" class="btn btn-ghost" style="padding:6px 10px;font-size:12px" onclick="openInGoogleMaps()"><i class="fa-brands fa-google"></i> Open in Google Maps</button>
+            <span id="gmapsStatus" style="font-size:11px;color:var(--muted);align-self:center"></span>
+          </div>
+          <!-- Hidden Google Maps autocomplete input (when API key available) -->
+          <input id="gmapsInput" placeholder="" style="display:none">
+          <div id="gmapsKeyWrap" style="margin-top:6px;display:flex;gap:6px;align-items:center">
+            <input id="gmapsKey" placeholder="Optional: paste Google Maps API key for better results" style="flex:1;padding:8px 10px;border-radius:10px;border:1px solid var(--line);font-size:12px">
+            <button type="button" class="btn btn-blue" style="padding:8px 12px;font-size:12px" onclick="saveGmapsKey()">Save key</button>
+            <button type="button" class="btn btn-ghost" style="padding:8px 10px;font-size:11px" onclick="clearGmapsKey()">Clear</button>
+          </div>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px">Tip: type to get Google/OSM suggestions. If nothing matches, just type any address manually — it will be saved as-is.</div>
+        </div>
         <div class="field"><label>Icon Note (shows as badge)</label><input id="fIconNote" placeholder="e.g. Fast-track, Shower, Carousel 4"></div>
       </div>
       <div class="field"><label>Details / Notes</label><textarea id="fNotes" rows="2" placeholder="Gate, seat, lounge access, baggage tag, prayer room, queue time…"></textarea></div>
@@ -375,6 +403,25 @@ button{font-family:inherit}
     <div class="footer">
       <button class="btn btn-ghost" onclick="closeModal()">Cancel <span class="kbd">Esc</span></button>
       <button class="btn btn-primary" onclick="savePlan()"><i class="fa-solid fa-floppy-disk"></i> Save Plan</button>
+    </div>
+  </div>
+</div>
+
+<!-- MAP PICKER MODAL -->
+<div class="modal-backdrop" id="mapModal">
+  <div class="modal" style="width:min(760px,100%)">
+    <div class="modal-header"><div><b><i class="fa-solid fa-map-location-dot"></i> Pick Location on Map</b><div style="font-size:12px;color:var(--muted)">Powered by Google Maps + OpenStreetMap — click map or drag pin, then Confirm</div></div><button class="icon-btn" onclick="closeMapPicker()"><i class="fa-solid fa-xmark"></i></button></div>
+    <div class="modal-body">
+      <div style="display:flex;gap:8px;margin-bottom:8px">
+        <input id="mapSearch" placeholder="Search on map…" style="flex:1;padding:10px 12px;border-radius:12px;border:1px solid var(--line)">
+        <button class="btn btn-blue" onclick="searchOnMap()"><i class="fa-solid fa-magnifying-glass"></i> Search</button>
+      </div>
+      <div id="mapPicker"></div>
+      <div style="display:flex;gap:8px;align-items:center;font-size:12px;color:var(--muted)"><i class="fa-solid fa-location-dot" style="color:var(--orange)"></i> <span id="mapPickLabel">Click anywhere on map</span><span style="margin-left:auto" id="mapCoords"></span></div>
+    </div>
+    <div class="footer">
+      <button class="btn btn-ghost" onclick="closeMapPicker()">Cancel</button>
+      <button class="btn btn-primary" onclick="confirmMapPick()"><i class="fa-solid fa-check"></i> Use this location</button>
     </div>
   </div>
 </div>
@@ -688,9 +735,188 @@ function scrollToItinerary(){ document.getElementById('itinerary').scrollIntoVie
 renderTypeGrid();
 render();
 document.getElementById('fDate').valueAsDate=new Date();
-window.addEventListener('keydown', e=>{ if(e.key==='Escape'){ closeModal(); document.getElementById('importModal').classList.remove('open'); }});
+window.addEventListener('keydown', e=>{ if(e.key==='Escape'){ closeModal(); document.getElementById('importModal').classList.remove('open'); closeMapPicker(); }});
 document.getElementById('planModal').addEventListener('click', e=>{ if(e.target===e.currentTarget) closeModal(); });
 document.getElementById('importModal').addEventListener('click', e=>{ if(e.target===e.currentTarget) e.currentTarget.classList.remove('open'); });
+document.getElementById('mapModal').addEventListener('click', e=>{ if(e.target===e.currentTarget) closeMapPicker(); });
+
+// ===== Google Maps + manual fallback for Location =====
+let _pickedLat=null,_pickedLng=null,_pickedAddr='';
+let _leafletMap=null,_leafletMarker=null;
+let _gmapsAutocomplete=null;
+
+function saveGmapsKey(){
+  const k=document.getElementById('gmapsKey').value.trim();
+  if(!k) return alert('Paste your Google Maps API key (from console.cloud.google.com). Leave empty to use free OSM.');
+  localStorage.setItem('shine_gmaps_key',k);
+  loadGoogleMaps(k);
+  alert('Key saved. Google autocomplete enabled.');
+}
+function clearGmapsKey(){
+  localStorage.removeItem('shine_gmaps_key');
+  document.getElementById('gmapsKey').value='';
+  document.getElementById('gmapsStatus').textContent='Using free OpenStreetMap — works offline, no key needed.';
+}
+function openInGoogleMaps(){
+  const q=document.getElementById('fLoc').value.trim()||'';
+  const url=q? 'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(q) : 'https://www.google.com/maps';
+  window.open(url,'_blank');
+}
+function useMyLocation(){
+  if(!navigator.geolocation) return alert('Geolocation not available');
+  navigator.geolocation.getCurrentPosition(async pos=>{
+    const lat=pos.coords.latitude, lng=pos.coords.longitude;
+    try{
+      const r=await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=16`);
+      const j=await r.json();
+      const addr=j.display_name|| lat+','+lng;
+      document.getElementById('fLoc').value=addr;
+      _pickedLat=lat; _pickedLng=lng; _pickedAddr=addr;
+      document.getElementById('gmapsStatus').textContent='📍 Location set from GPS';
+    }catch(e){
+      document.getElementById('fLoc').value=lat.toFixed(5)+','+lng.toFixed(5);
+    }
+  }, err=> alert('Location error: '+err.message));
+}
+
+// Autocomplete: OSM + Google
+let _suggestTimer=null;
+const locInput=document.getElementById('fLoc');
+const suggestBox=document.getElementById('locSuggest');
+if(locInput){
+  locInput.addEventListener('input', ()=>{
+    const q=locInput.value.trim();
+    clearTimeout(_suggestTimer);
+    if(q.length<2){ suggestBox.classList.remove('open'); suggestBox.innerHTML=''; return; }
+    _suggestTimer=setTimeout(()=> fetchSuggestions(q), 300);
+  });
+  locInput.addEventListener('focus', ()=>{
+    if(suggestBox.children.length) suggestBox.classList.add('open');
+  });
+  document.addEventListener('click', e=>{
+    if(!e.target.closest('.loc-wrap')) suggestBox.classList.remove('open');
+  });
+}
+async function fetchSuggestions(q){
+  // If Google Places is ready, let it handle; otherwise OSM
+  if(window.google && google.maps && google.maps.places && _gmapsAutocomplete){
+    return; // Google's own dropdown will show
+  }
+  try{
+    const r=await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&limit=6&addressdetails=1`);
+    const results=await r.json();
+    if(!results.length){ suggestBox.classList.remove('open'); return; }
+    suggestBox.innerHTML = results.map(r=>{
+      const label=r.display_name;
+      return `<div class="autocomplete-item" onclick="selectSuggestion(${JSON.stringify(label).replace(/"/g,'&quot;')}, ${r.lat}, ${r.lon})"><i class="fa-solid fa-location-dot"></i><span>${label}</span></div>`;
+    }).join('') + `<div class="autocomplete-item" onclick="selectSuggestion(${JSON.stringify(q).replace(/"/g,'&quot;')})" style="color:var(--muted)"><i class="fa-solid fa-keyboard"></i><span>Use typed: "${q.replace(/</g,'&lt;')}"</span></div>`;
+    suggestBox.classList.add('open');
+    document.getElementById('gmapsStatus').textContent='Suggestions by OpenStreetMap (free) — pick or keep typing';
+  }catch(e){ /* silent */ }
+}
+function selectSuggestion(label, lat, lon){
+  document.getElementById('fLoc').value=label;
+  if(lat && lon){ _pickedLat=parseFloat(lat); _pickedLng=parseFloat(lon); _pickedAddr=label; }
+  suggestBox.classList.remove('open');
+}
+function loadGoogleMaps(key){
+  if(document.getElementById('gmapsScript')) return;
+  const s=document.createElement('script');
+  s.id='gmapsScript';
+  s.src=`https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(key)}&libraries=places`;
+  s.async=true; s.defer=true;
+  s.onload=()=>{
+    document.getElementById('gmapsStatus').textContent='✅ Google Maps autocomplete active';
+    initGmapsAutocomplete();
+  };
+  s.onerror=()=> document.getElementById('gmapsStatus').textContent='Google key invalid — using OSM fallback (typing still works)';
+  document.head.appendChild(s);
+}
+function initGmapsAutocomplete(){
+  if(!window.google || !google.maps || !google.maps.places) return;
+  const input=document.getElementById('fLoc');
+  _gmapsAutocomplete = new google.maps.places.Autocomplete(input, { types:['geocode','establishment'] });
+  _gmapsAutocomplete.addListener('place_changed', ()=>{
+    const place=_gmapsAutocomplete.getPlace();
+    if(place.geometry){
+      _pickedLat=place.geometry.location.lat();
+      _pickedLng=place.geometry.location.lng();
+      _pickedAddr=place.formatted_address || place.name;
+      document.getElementById('fLoc').value=_pickedAddr;
+    }
+  });
+}
+// Init key on load
+(function(){
+  const k=localStorage.getItem('shine_gmaps_key')||'';
+  document.getElementById('gmapsKey').value=k;
+  if(k) loadGoogleMaps(k);
+  else document.getElementById('gmapsStatus').textContent='Using free OpenStreetMap — add Google key for richer Google results (optional)';
+})();
+
+// Map picker (Leaflet)
+function pickOnMap(){
+  document.getElementById('mapModal').classList.add('open');
+  setTimeout(initLeafletMap, 120);
+}
+function closeMapPicker(){ document.getElementById('mapModal').classList.remove('open'); }
+function initLeafletMap(){
+  if(!window.L){ // load leaflet js if not yet
+    const s=document.createElement('script');
+    s.src='https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+    s.onload=()=> initLeafletMap();
+    document.head.appendChild(s);
+    return;
+  }
+  if(_leafletMap){ _leafletMap.invalidateSize(); return; }
+  const startLat=_pickedLat||47.8, startLng=_pickedLng||13.04, z=_pickedLat?13:7;
+  _leafletMap = L.map('mapPicker').setView([startLat,startLng], z);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap'}).addTo(_leafletMap);
+  _leafletMarker = L.marker([startLat,startLng],{draggable:true}).addTo(_leafletMap);
+  _leafletMap.on('click', async e=>{
+    const {lat,lng}=e.latlng;
+    _leafletMarker.setLatLng([lat,lng]);
+    updateMapPick(lat,lng);
+    try{
+      const r=await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=16`);
+      const j=await r.json();
+      if(j.display_name) { _pickedAddr=j.display_name; document.getElementById('mapPickLabel').textContent=_pickedAddr; }
+    }catch(e){}
+  });
+  _leafletMarker.on('dragend', e=>{
+    const {lat,lng}=e.target.getLatLng();
+    updateMapPick(lat,lng);
+  });
+  updateMapPick(startLat,startLng);
+}
+function updateMapPick(lat,lng){
+  _pickedLat=lat; _pickedLng=lng;
+  document.getElementById('mapCoords').textContent=lat.toFixed(5)+', '+lng.toFixed(5);
+  if(!_pickedAddr) document.getElementById('mapPickLabel').textContent='Selected pin';
+}
+async function searchOnMap(){
+  const q=document.getElementById('mapSearch').value.trim();
+  if(!q) return;
+  try{
+    const r=await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&limit=1`);
+    const j=await r.json();
+    if(!j.length) return alert('Not found');
+    const {lat,lon,display_name}=j[0];
+    const la=parseFloat(lat), lo=parseFloat(lon);
+    if(!_leafletMap) initLeafletMap();
+    _leafletMap.setView([la,lo],14);
+    _leafletMarker.setLatLng([la,lo]);
+    _pickedAddr=display_name; _pickedLat=la; _pickedLng=lo;
+    document.getElementById('mapPickLabel').textContent=display_name;
+    updateMapPick(la,lo);
+  }catch(e){ alert('Search failed'); }
+}
+function confirmMapPick(){
+  if(_pickedAddr) document.getElementById('fLoc').value=_pickedAddr;
+  else if(_pickedLat) document.getElementById('fLoc').value=_pickedLat.toFixed(5)+','+_pickedLng.toFixed(5);
+  closeMapPicker();
+  document.getElementById('gmapsStatus').textContent='📍 Location picked from map';
+}
 </script>
 </body>
 </html>
