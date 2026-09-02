@@ -292,7 +292,7 @@ button{font-family:inherit}
   <div class="card card-pad" id="itinerary">
     <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:space-between">
       <div>
-        <div style="font-weight:800;font-size:18px;display:flex;gap:10px;align-items:center"><span id="tripTitle">—</span> <span id="tripDates" class="pill"></span></div>
+        <div style="font-weight:800;font-size:18px;display:flex;gap:10px;align-items:center;flex-wrap:wrap"><span id="tripTitle">—</span> <span id="tripDates" class="pill"></span><span id="timelineGlowPill" class="pill" style="display:inline-flex;align-items:center;gap:4px"></span></div>
         <div style="font-size:12px;color:var(--muted)" id="tripSubtitle">Select or create a trip</div>
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
@@ -863,20 +863,38 @@ function render(){
 
   const tl=document.getElementById('timeline');
   const empty=document.getElementById('emptyState');
-  // glowing timeline logic — exactly like TripIt: glows only when trip is active (in-progress)
+  // glowing timeline — precisely like TripIt: study TripIt system
+  // TripIt: vertical line is muted gray when trip not started / ended, vivid blue + halo + pulse when trip is in-progress (any plan date == today or between first and last plan)
   const activeTrip = trips.find(t=>t.id===activeTripId);
-  let timelineState='idle'; // idle = non-glowing gray
+  let timelineState='idle';
+  let statusText='';
   if(activeTrip){
     const today = new Date(); today.setHours(0,0,0,0);
-    const from = new Date(activeTrip.from); from.setHours(0,0,0,0);
-    const to = new Date(activeTrip.to); to.setHours(0,0,0,0);
-    if(today >= from && today <= to) timelineState='glow';
-    else timelineState='idle';
+    const tripFrom = new Date(activeTrip.from); tripFrom.setHours(0,0,0,0);
+    const tripTo = new Date(activeTrip.to); tripTo.setHours(0,0,0,0);
+    // TripIt precise: consider plan dates (like TripIt omits header and uses actual plan range). Use min/max plan date if plans exist
+    const planDates = list.map(s=> { const d=new Date(s.date); d.setHours(0,0,0,0); return d; }).sort((a,b)=> a-b);
+    let start = tripFrom, end = tripTo;
+    if(planDates.length){ start = planDates[0]; end = planDates[planDates.length-1]; }
+    // also consider single-day trip: glow on that day
+    if(today < start){ timelineState='idle'; statusText='Upcoming — timeline idle (gray)'; }
+    else if(today > end){ timelineState='idle'; statusText='Ended — timeline idle (gray)'; }
+    else { timelineState='glow'; statusText='In Trip — timeline glowing like TripIt'; }
+    // also glow if any plan is today exactly (even if header off by 1 day, like Dummy 2026-09-02 vs plan 2026-09-03)
+    const hasTodayPlan = list.some(s=> s.date === today.toISOString().slice(0,10));
+    if(hasTodayPlan) timelineState='glow';
   }
   tl.classList.remove('glow','idle');
   tl.classList.add(timelineState);
-  if(activeTrip && timelineState==='glow') tl.title='Trip in progress — timeline glowing';
-  else if(activeTrip) tl.title='Trip not active — timeline idle';
+  if(activeTrip) tl.title=statusText;
+  // update subtle status pill if exists
+  const glowPill=document.getElementById('timelineGlowPill');
+  if(glowPill && activeTrip){
+    glowPill.textContent = timelineState==='glow' ? '● Glowing — in trip' : '○ Idle';
+    glowPill.style.background = timelineState==='glow' ? '#e0f0ff' : '#f1f5f9';
+    glowPill.style.color = timelineState==='glow' ? '#0f6fb4' : '#64748b';
+    glowPill.title = statusText;
+  }
   if(list.length===0){ tl.innerHTML=''; empty.style.display='block'; return; }
   empty.style.display='none';
   const groups=groupByDate(list);
