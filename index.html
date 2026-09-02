@@ -151,40 +151,39 @@ button{font-family:inherit}
 .autocomplete-item:last-child{border:none}
 .autocomplete-item i{color:var(--blue);margin-top:2px}
 #mapPicker{height:360px;border-radius:14px;border:1px solid var(--line)}
-@media(max-width:1100px){.hero{grid-template-columns:1fr}.main{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}.type-grid{grid-template-columns:repeat(3,1fr)}}
+/* SIMPLE TRIPIT MODE — hide extra clutter, like screenshot */
+.stats, #pro, .right-col, #map, #docs, .beyond, .compare {display:none !important}
+.main{grid-template-columns:280px 1fr !important; max-width:1000px !important}
+.filters{display:none !important}
+.topbar button, .navlinks a[href="#map"], .navlinks a[href="#docs"], .navlinks a[href="#pro"]{display:none !important}
+#tripitImportModal .importTab, #importModal{display:none !important}
+#gmapsKeyWrap, .loc-extra {display:none !important}
+.type-grid{grid-template-columns:repeat(2,1fr) !important; gap:0 !important; border:1px solid var(--line); border-radius:12px; overflow:hidden}
+.type-btn{border:none !important; border-right:1px solid #eef2f7 !important; border-bottom:1px solid #eef2f7 !important; border-radius:0 !important; padding:14px 12px !important; justify-content:flex-start !important; flex-direction:row !important; gap:10px !important; font-size:13px !important}
+.type-btn i{width:32px;height:32px;border-radius:50%;background:var(--blue);color:#fff;display:grid;place-items:center;font-size:15px}
+.type-btn.active{background:var(--blue) !important;color:#fff !important}
+.type-btn.active i{background:#fff !important;color:var(--blue) !important}
+@media(max-width:1100px){.main{grid-template-columns:1fr !important}.stats{grid-template-columns:repeat(2,1fr)}.type-grid{grid-template-columns:repeat(2,1fr) !important}}
 @media(max-width:640px){.navbar{flex-wrap:wrap}.navlinks{order:3;width:100%;overflow:auto;white-space:nowrap}.hero h1{font-size:32px}.grid2,.grid3{grid-template-columns:1fr}.compare,.beyond{grid-template-columns:1fr}.segment{grid-template-columns:52px 1fr}.seg-actions{flex-direction:row;grid-column:1/-1;justify-content:flex-end}}
 </style>
 </head>
 <body>
-<div class="topbar" style="display:flex;justify-content:center;gap:12px;align-items:center;flex-wrap:wrap">✨ Your personal TripIt Shine — direct to dashboard <span style="background:rgba(255,255,255,.15);padding:2px 8px;border-radius:999px">No homepage — just your trips</span> <button onclick="document.getElementById('tripitImportModal').classList.add('open')" style="background:#fff;color:#0b2a46;border:none;padding:4px 10px;border-radius:999px;font-weight:800;font-size:12px;cursor:pointer"><i class="fa-solid fa-download"></i> Import from TripIt / Google</button></div>
+<div class="topbar" style="display:flex;justify-content:center;gap:8px;align-items:center;flex-wrap:wrap;background:#0f6fb4">TripIt Shine — simple like TripIt <span style="opacity:.85;font-size:11px">• private • only your trips</span></div>
 
 <nav class="navbar">
   <div class="brand"><div class="brand-mark"><i class="fa-solid fa-plane"></i></div> TripIt Shine <span style="font-weight:500;color:var(--muted);font-size:13px;letter-spacing:.04em">TRAVEL</span></div>
   <div class="navlinks">
     <a class="active" href="#">Itinerary</a>
-    <a href="#plans">Plans</a>
-    <a href="#map">Map</a>
-    <a href="#docs">Documents</a>
-    <a href="#pro">TripIt Pro+ More</a>
   </div>
   <div class="nav-actions">
-    <button class="btn btn-ghost" onclick="document.getElementById('tripitImportModal').classList.add('open')" style="background:#e0f0ff;color:var(--blue);border-color:#bfdbfe"><i class="fa-solid fa-cloud-arrow-down"></i> Import TripIt / Google</button>
-    <button class="btn btn-ghost" onclick="document.getElementById('importModal').classList.add('open')"><i class="fa-solid fa-inbox"></i> Forward Email</button>
-    <button class="btn btn-blue" onclick="openModal()"><i class="fa-solid fa-plus"></i> Add Plan</button>
-    <div id="userBox" style="display:flex;align-items:center;gap:8px"><img id="userAvatar" src="https://i.pravatar.cc/100?img=15" alt="avatar" style="width:36px;height:36px;border-radius:50%;border:2px solid var(--line)"><span id="userName" style="font-size:12px;font-weight:700;color:var(--muted)">You</span></div>
+    <button class="btn btn-blue" onclick="openModal()" style="border-radius:999px;background:#fff;color:var(--blue);border:1px solid var(--line);box-shadow:none"><i class="fa-solid fa-plus" style="width:20px;height:20px;border-radius:50%;border:1px solid var(--blue);display:grid;place-items:center;font-size:11px"></i> Add a Plan</button>
+    <div id="userBox" style="display:flex;align-items:center;gap:8px"><img id="userAvatar" src="https://i.pravatar.cc/100?img=15" alt="avatar" style="width:30px;height:30px;border-radius:50%;border:2px solid var(--line)"><span id="userName" style="font-size:12px;font-weight:700;color:var(--muted);display:none">You</span></div>
   </div>
 </nav>
 
-<div style="max-width:1280px;margin:14px auto 0;padding:0 24px;display:flex;gap:12px;align-items:center;flex-wrap:wrap">
-  <div style="background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px 14px;display:flex;gap:10px;align-items:center;flex:1;min-width:280px;box-shadow:var(--shadow)">
-    <div style="width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,var(--blue),#19a7e8);display:grid;place-items:center;color:#fff"><i class="fa-solid fa-plane"></i></div>
-    <div><div style="font-weight:800">Welcome back — your trips dashboard</div><div style="font-size:12px;color:var(--muted)">Direct to your itinerary • No homepage. TripIt → Shine in one click.</div></div>
-    <button class="btn btn-primary" style="margin-left:auto" onclick="document.getElementById('tripitImportModal').classList.add('open')"><i class="fa-solid fa-cloud-arrow-down"></i> Import TripIt / Google</button>
-  </div>
-  <div style="display:flex;gap:8px">
-    <button class="btn btn-ghost" onclick="openModal()"><i class="fa-solid fa-plus"></i> Add Plan</button>
-    <button class="btn btn-ghost" onclick="exportJSON()"><i class="fa-solid fa-download"></i> Backup</button>
-  </div>
+<div style="max-width:1000px;margin:10px auto 0;padding:0 24px;display:flex;gap:8px;align-items:center">
+  <div style="font-size:12px;color:var(--muted)"><span id="tripCountLabel"></span></div>
+  <button class="btn btn-ghost" style="margin-left:auto;padding:6px 10px;font-size:11px;border:none;color:var(--muted)" onclick="if(confirm('Import from TripIt.com?')) document.getElementById('tripitImportModal').classList.add('open')"><i class="fa-solid fa-cloud-arrow-down"></i> Import TripIt</button>
 </div>
 
 <div class="stats">
@@ -360,7 +359,7 @@ button{font-family:inherit}
             <input id="fLoc" placeholder="e.g. BOM T2 → VIE T1 or search any address" autocomplete="off">
             <div id="locSuggest" class="autocomplete-list"></div>
           </div>
-          <div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap">
+          <div class="loc-extra" style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap">
             <button type="button" class="btn btn-ghost" style="padding:6px 10px;font-size:12px" onclick="pickOnMap()"><i class="fa-solid fa-map-location-dot"></i> Pick on Map</button>
             <button type="button" class="btn btn-ghost" style="padding:6px 10px;font-size:12px" onclick="useMyLocation()"><i class="fa-solid fa-location-crosshairs"></i> Use my location</button>
             <button type="button" class="btn btn-ghost" style="padding:6px 10px;font-size:12px" onclick="openInGoogleMaps()"><i class="fa-brands fa-google"></i> Open in Google Maps</button>
@@ -490,26 +489,23 @@ button{font-family:inherit}
 
 <script>
 const TYPES = [
+  {id:'activity', label:'Activity', icon:'fa-person-walking', color:'#0f6fb4'},
   {id:'flight', label:'Flight', icon:'fa-plane', color:'#0f6fb4'},
-  {id:'hotel', label:'Hotel', icon:'fa-hotel', color:'#0ea573'},
-  {id:'car', label:'Car', icon:'fa-car', color:'#334155'},
-  {id:'train', label:'Train', icon:'fa-train', color:'#0f6fb4'},
-  {id:'bus', label:'Bus', icon:'fa-bus', color:'#f59e0b'},
-  {id:'ferry', label:'Ferry', icon:'fa-ship', color:'#06b6d4'},
-  {id:'restaurant', label:'Restaurant', icon:'fa-utensils', color:'#ef4444'},
-  {id:'activity', label:'Activity', icon:'fa-ticket', color:'#8b5cf6'},
-  {id:'wait', label:'Airport Wait', icon:'fa-hourglass-half', color:'#ff6b35'},
-  {id:'lounge', label:'Lounge', icon:'fa-couch', color:'#8b5cf6'},
-  {id:'immigration', label:'Immigration', icon:'fa-stamp', color:'#0f6fb4'},
-  {id:'baggage', label:'Baggage', icon:'fa-suitcase-rolling', color:'#64748b'},
-  {id:'layover', label:'Layover', icon:'fa-stopwatch', color:'#ff6b35'},
-  {id:'transit', label:'Local Transit', icon:'fa-bus-simple', color:'#0ea573'},
-  {id:'meeting', label:'Meeting', icon:'fa-handshake', color:'#334155'},
-  {id:'health', label:'Health/Ins.', icon:'fa-shield-heart', color:'#ef4444'},
-  {id:'parking', label:'Parking', icon:'fa-square-parking', color:'#64748b'},
-  {id:'photo', label:'Photo Spot', icon:'fa-camera', color:'#ec4899'},
-  {id:'packing', label:'Packing', icon:'fa-box-open', color:'#a16207'},
-  {id:'other', label:'Other', icon:'fa-ellipsis', color:'#64748b'},
+  {id:'hotel', label:'Accommodation', icon:'fa-bed', color:'#0f6fb4'},
+  {id:'car', label:'Car Rental', icon:'fa-car', color:'#0f6fb4'},
+  {id:'note', label:'Note', icon:'fa-note-sticky', color:'#0f6fb4'},
+  {id:'concert', label:'Concert', icon:'fa-music', color:'#0f6fb4'},
+  {id:'parking', label:'Parking', icon:'fa-square-parking', color:'#0f6fb4'},
+  {id:'cruise', label:'Cruise', icon:'fa-ship', color:'#0f6fb4'},
+  {id:'rail', label:'Rail', icon:'fa-train', color:'#0f6fb4'},
+  {id:'directions', label:'Directions', icon:'fa-diamond-turn-right', color:'#0f6fb4'},
+  {id:'restaurant', label:'Restaurant', icon:'fa-utensils', color:'#0f6fb4'},
+  {id:'ferry', label:'Ferry', icon:'fa-ferry', color:'#0f6fb4'},
+  {id:'theatre', label:'Theatre', icon:'fa-masks-theater', color:'#0f6fb4'},
+  {id:'map', label:'Map', icon:'fa-map', color:'#0f6fb4'},
+  {id:'tour', label:'Tour', icon:'fa-flag', color:'#0f6fb4'},
+  {id:'meeting', label:'Meeting', icon:'fa-handshake', color:'#0f6fb4'},
+  {id:'transportation', label:'Transportation', icon:'fa-bus', color:'#0f6fb4'},
 ];
 
 let trips = JSON.parse(localStorage.getItem('shine_trips')||'null') || [];
